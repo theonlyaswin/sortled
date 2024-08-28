@@ -56,7 +56,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="bg-blue-700 py-4">
+      <div className="bg-blue-700 lg:py-4 md:py-4 pb-16 pt-2">
         <div className="container mx-auto text-center">
           <p>&copy; 2024 Azora Ads. All rights reserved.</p>
         </div>

@@ -96,46 +96,49 @@ const ProductCard = ({ imageUrl, productName, price, id }) => {
   };
   return (
     <div 
-      className="flex flex-col items-center cursor-pointer relative w-64"
+      className="flex flex-col items-center cursor-pointer relative"
+      style={{width:"auto"}}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleCardClick}
     >
       <div
-        className="relative w-full h-80 bg-cover bg-center shadow-lg overflow-hidden"
-        style={{ backgroundImage: `url(${imageUrl})` }}
+        className="relative bg-cover bg-center shadow-lg overflow-hidden"
+        style={{width:"38vw",minWidth:"120px", maxWidth:"250px" , aspectRatio:"1/1.3"}}
       >
+        <img src={imageUrl} alt="" className='relative' style={{width:"100%",height:"100%",objectFit:"cover"}}/>
         <div 
-          className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg cursor-pointer"
+          className="absolute bg-white p-2 rounded-full shadow-lg cursor-pointer"
+          style={{top:"10px", left:"10px"}}
           onClick={(e) => {
             e.stopPropagation();
             handleAddToWishlist(e);
           }}
         >
           {isInWishlist ? (
-            <AiFillHeart className="text-red-600 w-5 h-5" />
+            <AiFillHeart className="text-red-600 w-2 h-2 lg:w-5 lg:h-5" />
           ) : (
-            <AiOutlineHeart className="text-gray-600 w-5 h-5" />
+            <AiOutlineHeart className="text-gray-600 w-3 h-3 lg:w-5 lg:h-5" />
           )}
         </div>
         
         {/* Share and Expand Icons */}
         <div
-          className={`absolute bottom-44 right-4 flex flex-col space-y-2 lg:transition-opacity lg:duration-300 ${hovered ? 'lg:opacity-100' : 'lg:opacity-0'} ease-in-out opacity-100 lg:opacity-0`}
-        >
+          className={`absolute right-4 flex flex-col space-y-2 lg:transition-opacity lg:duration-300 ${hovered ? 'lg:opacity-100' : 'lg:opacity-0'} ease-in-out opacity-100 lg:opacity-0`}
+          style={{top:"10px", right:"10px"}}>
           <div className="bg-white p-2 rounded-full shadow-lg cursor-pointer">
-            <FiShare2 className="text-gray-600 w-5 h-5" />
+            <FiShare2 className="text-gray-600 w-2 h-2 lg:w-5 lg:h-5" />
           </div>
           <div className="bg-white p-2 rounded-full shadow-lg cursor-pointer">
-            <FiMaximize2 className="text-gray-600 w-5 h-5" />
+            <FiMaximize2 className="text-gray-600 w-2 h-2 lg:w-5 lg:h-5" />
           </div>
         </div>
         <div className='w-full flex justify-center items-center' onClick={handleCardClick}>
           <button 
-            className={`absolute bottom-4 bg-white text-gray-800 font-semibold py-2 px-8 rounded-md shadow-lg border border-gray-300 flex items-center space-x-2 transition-all duration-300 hover:bg-black hover:text-white group lg:${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-100'} opacity-100 translate-y-0`}
+            className={`absolute bottom-4 bg-white text-gray-800 font-semibold py-1 px-3 sm:py-2 sm:px-4 rounded-md shadow-lg border border-gray-300 flex items-center space-x-1 sm:space-x-2 transition-all duration-300 hover:bg-black hover:text-white group lg:${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-100'} opacity-100 translate-y-0`}
           >
-            <AiOutlineShoppingCart className="w-5 h-5 group-hover:text-white" />
-            <span>Select options</span>
+            <AiOutlineShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 group-hover:text-white" />
+            <span className='text-xs sm:text-sm'>Select options</span>
           </button>
         </div>
       </div>
