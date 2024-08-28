@@ -30,11 +30,7 @@ const ProductPage = ({ params }) => {
   const [additionalImages, setAdditionalImages] = useState([]);
   const [selectedColor, setSelectedColor] = useState('white');
   const [selectedWatts, setSelectedWatts] = useState(5);
-
-
-
-  const colorOptions = ['white', 'yellow', 'red', 'green'];
-  const wattOptions = [5, 10, 15];
+  const [price, setPrice] = useState(null);
 
   function getOrCreateDeviceId() {
   if (typeof window !== 'undefined') {
@@ -72,55 +68,59 @@ useEffect(() => {
 
   checkWishlistStatus();
 
-      const fetchProduct = async () => {
-      try {
-        const docRef = doc(db, 'products', params.slug);
-        const docSnap = await getDoc(docRef);
+  const fetchProduct = async () => {
+    try {
+      const docRef = doc(db, 'products', params.slug);
+      const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-          const productData = docSnap.data();
-          setProduct(productData);
-          setMainImage(productData.images[0]); // Set the main image
-          setAdditionalImages(productData.images.slice(1)); // Set the additional images
-          fetchRelatedProducts(productData.category); // Fetch related products based on category
-        } else {
-          
-          router.push('/not-found');
-          console.log('No such document!');
-          
-        }
-      } catch (error) {
+      if (docSnap.exists()) {
+        const productData = docSnap.data();
+        setProduct(productData);
+        setMainImage(productData.images[0]); // Set the main image
+        setAdditionalImages(productData.images.slice(1)); // Set the additional images
+        setSelectedColor(productData.colorVariants[0] || ''); // Set default selected color
 
-        router.push('/not-found');
-        console.error('Error fetching product: ', error);
+        // Set default watt and price
+        const initialWattsOption = productData.wattOptions.find(option => option.price && option.watts);
+        setSelectedWatts(initialWattsOption?.watts || null);
+        setPrice(initialWattsOption?.price || productData.price);
         
+        fetchRelatedProducts(productData.category); // Fetch related products based on category
+      } else {
+        router.push('/not-found');
+        console.log('No such document!');
       }
-    };
+    } catch (error) {
+      router.push('/not-found');
+      console.error('Error fetching product: ', error);
+    }
+  };
 
-    const fetchRelatedProducts = async (category) => {
-      try {
-        const q = query(
-          collection(db, 'products'),
-          where('category', '==', category)
-        );
+  const fetchRelatedProducts = async (category) => {
+    try {
+      const q = query(
+        collection(db, 'products'),
+        where('category', '==', category)
+      );
 
-        const querySnapshot = await getDocs(q);
-        const relatedProducts = [];
-        querySnapshot.forEach((doc) => {
-          if (doc.id !== params.slug) {
-            relatedProducts.push({ id: doc.id, ...doc.data() });
-          }
-        });
+      const querySnapshot = await getDocs(q);
+      const relatedProducts = [];
+      querySnapshot.forEach((doc) => {
+        if (doc.id !== params.slug) {
+          relatedProducts.push({ id: doc.id, ...doc.data() });
+        }
+      });
 
-        setRelatedProducts(relatedProducts);
-      } catch (error) {
-        console.error('Error fetching related products: ', error);
-      }
-    };
+      setRelatedProducts(relatedProducts);
+    } catch (error) {
+      console.error('Error fetching related products: ', error);
+    }
+  };
 
-    fetchProduct();
+  fetchProduct();
 
 }, [params.slug]);
+
 
 
 const updateUserProduct = async (type) => {
@@ -130,7 +130,7 @@ const updateUserProduct = async (type) => {
 
   if (!snapshot.exists()) {
     const initialData = {
-      [type]: type === 'cart' ? [{ id: params.slug, quantity: Math.min(quantity, 100), price: product.price }] : [params.slug],
+      [type]: type === 'cart' ? [{ id: params.slug, quantity: Math.min(quantity, 100), price }] : [params.slug],
     };
     await set(userRef, initialData);
   } else {
@@ -145,7 +145,7 @@ const updateUserProduct = async (type) => {
         const newQuantity = Math.min(products[existingProductIndex].quantity + quantity, 100);
         products[existingProductIndex].quantity = newQuantity;
       } else {
-        products.push({ id: params.slug, quantity: Math.min(quantity, 100), price: product.price });
+        products.push({ id: params.slug, quantity: Math.min(quantity, 100), price });
       }
     } else {
       if (products.includes(params.slug)) {
@@ -184,6 +184,12 @@ const handleAddToWishlist = async () => {
     setAdditionalImages(newAdditionalImages);
   };
 
+  const handleWattChange = (watt, price) => {
+  setSelectedWatts(watt);
+  setPrice(price);
+  };
+
+
   if (!product) {
     return <div>Loading...</div>; // Handle loading state
   }
@@ -220,7 +226,7 @@ const handleAddToWishlist = async () => {
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
           
           <p className="text-2xl font-semibold mb-2 text-orange-500">
-            ₹{product.price}
+            ₹{price}
           </p>
           {product.oldPrice && (
             <p className="text-gray-500 line-through mb-4">
@@ -232,7 +238,7 @@ const handleAddToWishlist = async () => {
                     <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">Color</h3>
             <div className="flex space-x-4">
-              {colorOptions.map((color) => (
+              {product.colorVariants.map((color) => (
                 <button
                   key={color}
                   className={`w-8 h-8 rounded-full border-2 ${
@@ -245,24 +251,26 @@ const handleAddToWishlist = async () => {
             </div>
           </div>
 
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Watts</h3>
-            <div className="flex space-x-4">
-              {wattOptions.map((watt) => (
-                <button
-                  key={watt}
-                  className={`px-4 py-2 rounded ${
-                    selectedWatts === watt
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                  onClick={() => setSelectedWatts(watt)}
-                >
-                  {watt}W
-                </button>
-              ))}
+          {product.wattOptions?.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">Watts</h3>
+              <div className="flex space-x-4">
+                {product.wattOptions.map((option) => (
+                  <button
+                    key={option.watts}
+                    className={`px-4 py-2 border-2 rounded ${
+                      selectedWatts === option.watts
+                        ? 'border-blue-500 text-blue-500'
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                    onClick={() => handleWattChange(option.watts, option.price)}
+                  >
+                    {option.watts}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Quantity Selector */}
           <div className="flex items-center mb-6 space-x-4">

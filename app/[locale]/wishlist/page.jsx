@@ -133,7 +133,7 @@ const Wishlist = () => {
         {wishlistItems.length === 0 ? (
           <div className=" flex justify-center items-center flex-col">
           <p className="text-center text-gray-500">Your wishlist is empty.</p>
-          <img src="./Empty2.svg" alt="shopping bag" className='lg:w-1/3 w-3/3'/>
+          <img src="/Empty2.svg" alt="shopping bag" className='lg:w-1/3 w-3/3'/>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -156,7 +156,7 @@ const Cart = () => {
         {cartItems.length === 0 ? (
           <div className="flex justify-center items-center flex-col">
             <p className="text-center text-gray-500">Your cart is empty. Start Shopping</p>
-            <img src="./shoppingbag.svg" alt="shopping bag" className='lg:w-1/3 w-3/3'/>
+            <img src="/shoppingbag.svg" alt="shopping bag" className='lg:w-1/3 w-3/3'/>
           </div>
         ) : (
           <div className="overflow-x-auto">

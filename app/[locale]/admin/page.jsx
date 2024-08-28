@@ -1,4 +1,3 @@
-// pages/admin.js
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from "firebase
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import AdminLogin from '../components/AdminLogin';
 import { motion } from 'framer-motion';
-import { FiPlus, FiEdit, FiShoppingBag, FiTrash2, FiSave, FiEye } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiShoppingBag, FiTrash2, FiSave, FiEye, FiImage } from 'react-icons/fi';
 import { db, storage } from '../firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,11 +18,11 @@ const Admin = () => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: '',
-    price: '',
     description: '',
     images: [],
+    colorVariants: [],
+    wattOptions: [],
     specifications: {
-      watts: '',
       voltage: '',
       size: '',
       otherDetails: ''
@@ -33,8 +32,11 @@ const Admin = () => {
   });
   const [editingProduct, setEditingProduct] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState({ name: '', description: '', image: null });
+  const [editingCategory, setEditingCategory] = useState(null);
 
-  useEffect(() => {
+    useEffect(() => {
     if (isAuthenticated) {
       fetchProducts();
       fetchOrders();
@@ -63,23 +65,35 @@ const Admin = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'images') {
-      setNewProduct(prev => ({ ...prev, images: [...prev.images, ...files] }));
-    } else if (name.startsWith('spec_')) {
-      const specName = name.split('_')[1];
-      setNewProduct(prev => ({
-        ...prev,
-        specifications: { ...prev.specifications, [specName]: value }
-      }));
-    } else if (name === 'tags') {
-      setNewProduct(prev => ({ ...prev, tags: value.split(',').map(tag => tag.trim()) }));
-    } else {
-      setNewProduct(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
+const handleInputChange = (e) => {
+  const { name, value, files } = e.target;
+  if (name === 'images') {
+    setNewProduct(prev => ({ ...prev, images: [...prev.images, ...files] }));
+  } else if (name.startsWith('spec_')) {
+    const specName = name.split('_')[1];
+    setNewProduct(prev => ({
+      ...prev,
+      specifications: { ...prev.specifications, [specName]: value }
+    }));
+  } else if (name === 'tags') {
+    setNewProduct(prev => ({ ...prev, tags: value.split(',').map(tag => tag.trim()) }));
+  } else if (name === 'colorVariants') {
+    setNewProduct(prev => ({ ...prev, colorVariants: value.split(',').map(color => color.trim()) }));
+  } else if (name === 'wattOptions') {
+    setNewProduct(prev => ({ 
+      ...prev, 
+      wattOptions: value.split(',').map(option => {
+        const [watts, price] = option.split(':');
+        return { 
+          watts: watts.trim(), 
+          price: price ? price.trim() : '' 
+        };
+      })
+    }));
+  } else {
+    setNewProduct(prev => ({ ...prev, [name]: value }));
+  }
+};
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
@@ -99,11 +113,11 @@ const Admin = () => {
       setNewProduct({
         name: '',
         category: '',
-        price: '',
         description: '',
         images: [],
+        colorVariants: [],
+        wattOptions: [],
         specifications: {
-          watts: '',
           voltage: '',
           size: '',
           otherDetails: ''
@@ -150,11 +164,11 @@ const Admin = () => {
       setNewProduct({
         name: '',
         category: '',
-        price: '',
         description: '',
         images: [],
+        colorVariants: [],
+        wattOptions: [],
         specifications: {
-          watts: '',
           voltage: '',
           size: '',
           otherDetails: ''
@@ -163,6 +177,7 @@ const Admin = () => {
         reviews: []
       });
       fetchProducts();
+      setActiveTab('edit');
       toast.success("Product updated successfully!");
     } catch (error) {
       console.error("Error updating product: ", error);
@@ -170,7 +185,8 @@ const Admin = () => {
     }
   };
 
-  const handleDeleteProduct = async (id) => {
+
+    const handleDeleteProduct = async (id) => {
     try {
       await deleteDoc(doc(db, "products", id));
       fetchProducts();
@@ -181,17 +197,89 @@ const Admin = () => {
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
     try {
-      const orderRef = doc(db, "orders", orderId);
-      await updateDoc(orderRef, { status: newStatus });
-      fetchOrders();
-      toast.success("Order status updated successfully!");
+      const imageRef = ref(storage, `category-images/${newCategory.image.name}`);
+      await uploadBytes(imageRef, newCategory.image);
+      const imageUrl = await getDownloadURL(imageRef);
+
+      await addDoc(collection(db, "categories"), {
+        name: newCategory.name,
+        description: newCategory.description,
+        image: imageUrl
+      });
+
+      setNewCategory({ name: '', description: '', image: null });
+      fetchCategories();
+      toast.success("Category added successfully!");
     } catch (error) {
-      console.error("Error updating order status: ", error);
-      toast.error("Failed to update order status. Please try again.");
+      console.error("Error adding category: ", error);
+      toast.error("Failed to add category. Please try again.");
     }
   };
+
+const handleEditCategory = (category) => {
+    setEditingCategory(category);
+    setNewCategory({
+      name: category.name,
+      description: category.description,
+      image: category.image
+    });
+};
+
+const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    try {
+      const categoryRef = doc(db, "categories", editingCategory.id);
+      let updatedCategory = { ...newCategory };
+
+      if (newCategory.image instanceof File) {
+        const imageRef = ref(storage, `category-images/${newCategory.image.name}`);
+        await uploadBytes(imageRef, newCategory.image);
+        updatedCategory.image = await getDownloadURL(imageRef);
+      }
+
+      await updateDoc(categoryRef, updatedCategory);
+      setEditingCategory(null);
+      setNewCategory({ name: '', description: '', image: null });
+      fetchCategories();
+      toast.success("Category updated successfully!");
+    } catch (error) {
+      console.error("Error updating category: ", error);
+      toast.error("Failed to update category. Please try again.");
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      await deleteDoc(doc(db, "categories", id));
+      fetchCategories();
+      toast.success("Category deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting category: ", error);
+      toast.error("Failed to delete category. Please try again.");
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "categories"));
+      const fetchedCategories = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCategories(fetchedCategories);
+    } catch (error) {
+      console.error("Error fetching categories: ", error);
+      toast.error("Failed to fetch categories. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProducts();
+      fetchOrders();
+      fetchCategories();
+    }
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <AdminLogin onLogin={setIsAuthenticated} />;
@@ -223,6 +311,12 @@ const Admin = () => {
             >
               <FiShoppingBag className="inline-block mr-2" /> Orders
             </button>
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`flex-1 py-4 px-6 text-center font-medium ${activeTab === 'categories' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <FiImage className="inline-block mr-2" /> Categories
+            </button>
           </div>
 
           <div className="p-6">
@@ -234,7 +328,6 @@ const Admin = () => {
               >
                 <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
                 <form onSubmit={handleAddProduct} className="space-y-4">
-                  
                   <div className="mb-4">
                     <label htmlFor="name" className="block text-gray-700 font-semibold">Product Name</label>
                     <input
@@ -301,6 +394,33 @@ const Admin = () => {
                       className="w-full p-2 border rounded"
                     />
                   </div>
+                  
+                  {/* New fields */}
+                  <div className="mb-4">
+                    <label htmlFor="colorVariants" className="block text-gray-700 font-semibold">Color Variants</label>
+                    <input
+                      type="text"
+                      id="colorVariants"
+                      name="colorVariants"
+                      value={newProduct.colorVariants.join(', ')}
+                      onChange={handleInputChange}
+                      placeholder="Enter color variants separated by commas"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="wattOptions" className="block text-gray-700 font-semibold">Watt Options and Prices</label>
+                    <input
+                      type="text"
+                      id="wattOptions"
+                      name="wattOptions"
+                      value={newProduct.wattOptions.map(option => `${option.watts}:${option.price}`).join(', ')}
+                      onChange={handleInputChange}
+                      placeholder="Enter watt:price pairs separated by commas (e.g., 60:1000, 100:1500)"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  
                   <div className="mb-4">
                     <label className="block text-gray-700 font-semibold">Specifications</label>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -384,29 +504,207 @@ const Admin = () => {
                 transition={{ duration: 0.5 }}
               >
                 <h2 className="text-2xl font-bold mb-4">Edit Products</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {products.map((product) => (
-                    <div key={product.id} className="bg-white shadow rounded-lg p-4">
-                      <h3 className="font-bold text-lg mb-2">{product.name}</h3>
-                      <p className="text-gray-600 mb-2">Category: {product.category}</p>
-                      <p className="text-gray-600 mb-2">Price: ₹{product.price}</p>
-                      <div className="flex space-x-2 mt-4">
-                        <button
-                          onClick={() => handleEditProduct(product)}
-                          className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                        >
-                          <FiEdit className="inline-block mr-1" /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        >
-                          <FiTrash2 className="inline-block mr-1" /> Delete
-                        </button>
+                {editingProduct ? (
+                  <form onSubmit={handleUpdateProduct} className="space-y-4">
+                                      <div className="mb-4">
+                    <label htmlFor="name" className="block text-gray-700 font-semibold">Product Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={newProduct.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter product name"
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="category" className="block text-gray-700 font-semibold">Category</label>
+                    <select
+                      id="category"
+                      name="category"
+                      value={newProduct.category}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">Select category</option>
+                      <option value="Office">Office</option>
+                      <option value="Home">Home</option>
+                      <option value="Hospital">Hospital</option>
+                    </select>
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in ₹ )</label>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={newProduct.price}
+                      onChange={handleInputChange}
+                      placeholder="Enter product price"
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="description" className="block text-gray-700 font-semibold">Description</label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={newProduct.description}
+                      onChange={handleInputChange}
+                      placeholder="Enter product description"
+                      required
+                      rows="4"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="images" className="block text-gray-700 font-semibold">Images</label>
+                    <input
+                      type="file"
+                      id="images"
+                      name="images"
+                      multiple
+                      onChange={handleInputChange}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  
+                  {/* New fields */}
+                  <div className="mb-4">
+                    <label htmlFor="colorVariants" className="block text-gray-700 font-semibold">Color Variants</label>
+                    <input
+                      type="text"
+                      id="colorVariants"
+                      name="colorVariants"
+                      value={newProduct.colorVariants.join(', ')}
+                      onChange={handleInputChange}
+                      placeholder="Enter color variants separated by commas"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="wattOptions" className="block text-gray-700 font-semibold">Watt Options and Prices</label>
+                    <input
+                      type="text"
+                      id="wattOptions"
+                      name="wattOptions"
+                      value={newProduct.wattOptions.map(option => `${option.watts}:${option.price}`).join(', ')}
+                      onChange={handleInputChange}
+                      placeholder="Enter watt:price pairs separated by commas (e.g., 60:1000, 100:1500)"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-gray-700 font-semibold">Specifications</label>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label htmlFor="spec_watts" className="block text-gray-700">Watts</label>
+                        <input
+                          type="text"
+                          id="spec_watts"
+                          name="spec_watts"
+                          value={newProduct.specifications.watts}
+                          onChange={handleInputChange}
+                          placeholder="Enter watts"
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="spec_voltage" className="block text-gray-700">Voltage</label>
+                        <input
+                          type="text"
+                          id="spec_voltage"
+                          name="spec_voltage"
+                          value={newProduct.specifications.voltage}
+                          onChange={handleInputChange}
+                          placeholder="Enter voltage"
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="spec_size" className="block text-gray-700">Size</label>
+                        <input
+                          type="text"
+                          id="spec_size"
+                          name="spec_size"
+                          value={newProduct.specifications.size}
+                          onChange={handleInputChange}
+                          placeholder="Enter size"
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="spec_otherDetails" className="block text-gray-700">Other Details</label>
+                        <input
+                          type="text"
+                          id="spec_otherDetails"
+                          name="spec_otherDetails"
+                          value={newProduct.specifications.otherDetails}
+                          onChange={handleInputChange}
+                          placeholder="Enter other details"
+                          className="w-full p-2 border rounded"
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="tags" className="block text-gray-700 font-semibold">Tags</label>
+                    <input
+                      type="text"
+                      id="tags"
+                      name="tags"
+                      value={newProduct.tags.join(', ')}
+                      onChange={handleInputChange}
+                      placeholder="Enter tags separated by commas"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+
+                    <button
+                      type="submit"
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      <FiSave className="inline-block mr-2" /> Update Product
+                    </button>
+                    <button
+                      onClick={() => setEditingProduct(null)}
+                      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {products.map((product) => (
+                      <div key={product.id} className="bg-white shadow rounded-lg p-4">
+                        <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                        <p className="text-gray-600 mb-2">Category: {product.category}</p>
+                        <p className="text-gray-600 mb-2">
+                          Price: {product.wattOptions.map(option => `${option.watts}W: ₹${option.price}`).join(', ')}
+                        </p>
+                        <div className="flex space-x-2 mt-4">
+                          <button
+                            onClick={() => handleEditProduct(product)}
+                            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                          >
+                            <FiEdit className="inline-block mr-1" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                          >
+                            <FiTrash2 className="inline-block mr-1" /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -455,6 +753,96 @@ const Admin = () => {
                   ))}
                 </div>
               </motion.div>
+            )}
+
+            {activeTab === 'categories' && (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h2 className="text-2xl font-bold mb-4">Manage Categories</h2>
+      <form onSubmit={editingCategory ? handleUpdateCategory : handleAddCategory} className="space-y-4 mb-8">
+        <div className="mb-4">
+          <label htmlFor="categoryName" className="block text-gray-700 font-semibold">Category Name</label>
+          <input
+            type="text"
+            id="categoryName"
+            name="name"
+            value={newCategory.name}
+            onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+            placeholder="Enter category name"
+            required
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="categoryDescription" className="block text-gray-700 font-semibold">Category Description</label>
+          <textarea
+            id="categoryDescription"
+            name="description"
+            value={newCategory.description}
+            onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+            placeholder="Enter category description"
+            required
+            rows="3"
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="categoryImage" className="block text-gray-700 font-semibold">Category Image</label>
+          <input
+            type="file"
+            id="categoryImage"
+            name="image"
+            onChange={(e) => setNewCategory({...newCategory, image: e.target.files[0]})}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          {editingCategory ? <><FiSave className="inline-block mr-2" /> Update Category</> : <><FiPlus className="inline-block mr-2" /> Add Category</>}
+        </button>
+        {editingCategory && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCategory(null);
+              setNewCategory({ name: '', description: '', image: null });
+            }}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2"
+          >
+            Cancel
+          </button>
+        )}
+      </form>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categories.map((category) => (
+          <div key={category.id} className="bg-white shadow rounded-lg p-4">
+            <img src={category.image} alt={category.name} className="w-full h-40 object-cover rounded mb-4" />
+            <h3 className="font-bold text-lg mb-2">{category.name}</h3>
+            <p className="text-gray-600 mb-4">{category.description}</p>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleEditCategory(category)}
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+              >
+                <FiEdit className="inline-block mr-1" /> Edit
+              </button>
+              <button
+                onClick={() => handleDeleteCategory(category.id)}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              >
+                <FiTrash2 className="inline-block mr-1" /> Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
             )}
           </div>
         </div>

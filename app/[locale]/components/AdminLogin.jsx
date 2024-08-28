@@ -1,4 +1,3 @@
-// components/AdminLogin.jsx
 
 import { useState } from 'react';
 
