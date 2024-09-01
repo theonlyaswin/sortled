@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db as firestore } from '../firebase';
 import { FiEye } from 'react-icons/fi';
 
@@ -22,17 +22,17 @@ const MyOrders = () => {
           throw new Error('No device ID found');
         }
 
-        // Reference to the specific document in the 'orders' collection using uniqueDeviceId
-        const orderDocRef = doc(firestore, 'orders', uniqueDeviceId);
+        // Query to get orders with the specific uniqueDeviceId
+        const ordersRef = collection(firestore, 'orders');
+        const q = query(ordersRef, where('userId', '==', uniqueDeviceId));
+        const querySnapshot = await getDocs(q);
 
-        // Fetch the document data
-        const orderDoc = await getDoc(orderDocRef);
+        const userOrders = [];
+        querySnapshot.forEach((doc) => {
+          userOrders.push({ id: doc.id, ...doc.data() });
+        });
 
-        if (orderDoc.exists()) {
-          setOrders([{ id: orderDoc.id, ...orderDoc.data() }]);
-        } else {
-          setOrders([]);
-        }
+        setOrders(userOrders);
       } catch (err) {
         console.error('Error fetching orders:', err);
         setError(err.message);
@@ -109,7 +109,7 @@ const MyOrders = () => {
             <ul className="mb-6">
               {selectedOrder.items.map((item, index) => (
                 <li key={index} className="mb-2">
-                  <span className="font-medium">{item.name}</span> - Quantity: {item.quantity} - Price: ${item.price}
+                  <span className="font-medium">{item.name}</span> - Quantity: {item.quantity} - Price: ${item.price} - Watts: {item.watts}
                 </li>
               ))}
             </ul>

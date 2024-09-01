@@ -5,7 +5,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from "firebase
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import AdminLogin from '../components/AdminLogin';
 import { motion } from 'framer-motion';
-import { FiPlus, FiEdit, FiShoppingBag, FiTrash2, FiSave, FiEye, FiImage } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiShoppingBag, FiTrash2, FiSave, FiEye, FiImage, FiUpload } from 'react-icons/fi';
 import { db, storage } from '../firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,6 +14,8 @@ const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeTab, setActiveTab] = useState('add');
+    const [headerImages, setHeaderImages] = useState([]);
+  const [newHeaderImages, setNewHeaderImages] = useState([]);
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -36,12 +38,6 @@ const Admin = () => {
   const [newCategory, setNewCategory] = useState({ name: '', description: '', image: null });
   const [editingCategory, setEditingCategory] = useState(null);
 
-    useEffect(() => {
-    if (isAuthenticated) {
-      fetchProducts();
-      fetchOrders();
-    }
-  }, [isAuthenticated]);
 
   const fetchProducts = async () => {
     try {
@@ -273,11 +269,62 @@ const handleUpdateCategory = async (e) => {
     }
   };
 
+
+  const fetchHeaderImages = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "headerimg"));
+      const fetchedImages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setHeaderImages(fetchedImages);
+    } catch (error) {
+      console.error("Error fetching header images: ", error);
+      toast.error("Failed to fetch header images. Please try again.");
+    }
+  };
+
+  const handleHeaderImageUpload = async (e) => {
+    e.preventDefault();
+    if (newHeaderImages.length === 0) return;
+
+    try {
+      for (let i = 0; i < newHeaderImages.length; i++) {
+        const image = newHeaderImages[i];
+        const imageRef = ref(storage, `header-images/${image.name}`);
+        await uploadBytes(imageRef, image);
+        const imageUrl = await getDownloadURL(imageRef);
+
+        await addDoc(collection(db, "headerimg"), { url: imageUrl });
+      }
+      
+      setNewHeaderImages([]);
+      fetchHeaderImages();
+      toast.success("Header images uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading header images: ", error);
+      toast.error("Failed to upload header images. Please try again.");
+    }
+  };
+
+  const handleDeleteHeaderImage = async (id, url) => {
+    try {
+      await deleteDoc(doc(db, "headerimg", id));
+      const imageRef = ref(storage, url);
+      await deleteObject(imageRef);
+      fetchHeaderImages();
+      toast.success("Header image deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting header image: ", error);
+      toast.error("Failed to delete header image. Please try again.");
+    }
+  };
+
+
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchProducts();
       fetchOrders();
       fetchCategories();
+      fetchHeaderImages();
     }
   }, [isAuthenticated]);
 
@@ -316,6 +363,12 @@ const handleUpdateCategory = async (e) => {
               className={`flex-1 py-4 px-6 text-center font-medium ${activeTab === 'categories' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
             >
               <FiImage className="inline-block mr-2" /> Categories
+            </button>
+            <button
+              onClick={() => setActiveTab('header-images')}
+              className={`flex-1 py-4 px-6 text-center font-medium ${activeTab === 'header-images' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <FiUpload className="inline-block mr-2" /> Header Images
             </button>
           </div>
 
@@ -844,6 +897,51 @@ const handleUpdateCategory = async (e) => {
       </div>
     </motion.div>
             )}
+
+            {activeTab === 'header-images' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <h2 className="text-2xl font-bold mb-4">Manage Header Images</h2>
+                <form onSubmit={handleHeaderImageUpload} className="space-y-4 mb-8">
+                  <div className="mb-4">
+                    <label htmlFor="headerImages" className="block text-gray-700 font-semibold">Upload Header Images</label>
+                    <input
+                      type="file"
+                      id="headerImages"
+                      onChange={(e) => setNewHeaderImages(Array.from(e.target.files))}
+                      accept="image/*"
+                      multiple
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    <FiUpload className="inline-block mr-2" /> Upload Images
+                  </button>
+                </form>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {headerImages.map((image) => (
+                    <div key={image.id} className="bg-white shadow rounded-lg p-4">
+                      <img src={image.url} alt="Header" className="w-full h-40 object-cover rounded mb-4" />
+                      <button
+                        onClick={() => handleDeleteHeaderImage(image.id, image.url)}
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                      >
+                        <FiTrash2 className="inline-block mr-1" /> Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+
           </div>
         </div>
       </div>

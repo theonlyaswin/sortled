@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import ProductCard from '../components/ProductCard';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, startAfter } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -11,9 +11,11 @@ const AllProducts = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [lastVisible, setLastVisible] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
 
-    const filterOptions = [
+  const filterOptions = [
     { id: 'new', label: 'New Arrivals' },
     { id: 'featured', label: 'Featured' },
     { id: 'sale', label: 'On Sale' },
@@ -21,21 +23,55 @@ const AllProducts = () => {
     { id: 'all', label: 'All' },
   ];
 
-  
+  const fetchProducts = useCallback(async (isInitialLoad = false) => {
+    if (isFetching) return;
+
+    setIsFetching(true);
+
+    try {
+      const productQuery = query(
+        collection(db, 'products'),
+        orderBy('name'),
+        limit(12),
+        isInitialLoad ? null : startAfter(lastVisible)
+      );
+
+      const querySnapshot = await getDocs(productQuery);
+      const fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Filter out duplicates
+      const newProducts = isInitialLoad
+        ? fetchedProducts
+        : fetchedProducts.filter(product => !products.some(p => p.id === product.id));
+
+      setProducts(prevProducts => [...prevProducts, ...newProducts]);
+      setFilteredProducts(prevFiltered => [...prevFiltered, ...newProducts]);
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+
+    } catch (error) {
+      console.error('Error fetching products: ', error);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [lastVisible, isFetching, products]);
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'products'));
-        const fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setProducts(fetchedProducts);
-        setFilteredProducts(fetchedProducts);
-      } catch (error) {
-        console.error('Error fetching products: ', error);
+    fetchProducts(true);
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+
+      if (scrollTop / scrollHeight > 0.95 && !isFetching) {
+        fetchProducts();
       }
     };
 
-    fetchProducts();
-  }, []);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [fetchProducts, isFetching]);
 
   return (
     <div className="flex justify-center items-center flex-col p-8 my-28 w-full">
@@ -61,7 +97,6 @@ const AllProducts = () => {
         </div>
       </div>
 
-      {/* Add Suspense for FilteredProducts */}
       <Suspense>
         <FilteredProducts
           products={products}
@@ -76,8 +111,6 @@ const AllProducts = () => {
 };
 
 // FilteredProducts Component
-
-
 const FilteredProducts = ({
   products,
   filteredProducts,
@@ -122,11 +155,11 @@ const FilteredProducts = ({
           productName={product.name}
           price={product.price}
           id={product.id}
+          wattOptions={product.wattOptions || []} // Ensures wattOptions is passed and defaults to an empty array if undefined
         />
       ))}
     </div>
   );
 };
-
 
 export default AllProducts;

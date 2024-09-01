@@ -34,7 +34,6 @@ const Cart = () => {
       setError(null);
       try {
         const uniqueDeviceId = getOrCreateDeviceId();
-        console.log('Device ID:', uniqueDeviceId);
         if (!uniqueDeviceId) {
           throw new Error('No device ID found');
         }
@@ -42,18 +41,15 @@ const Cart = () => {
         const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
         const snapshot = await get(cartRef);
 
-        console.log('Cart snapshot:', snapshot.val());
-
         if (snapshot.exists()) {
           const data = snapshot.val();
           const cartArray = Object.entries(data).map(([key, value]) => ({
             realid: key,
             id: value.id,
             quantity: value.quantity,
-            price: value.price,
+            price: value.price, // Fetch price from Realtime Database
+            watt: value.watt,  // Fetch watts from Realtime Database
           }));
-
-          console.log('Cart array:', cartArray);
 
           const fetchedItems = await Promise.all(
             cartArray.map(async (item) => {
@@ -61,16 +57,17 @@ const Cart = () => {
                 const productRef = doc(firestore, 'products', item.id);
                 const productSnap = await getDoc(productRef);
 
-                console.log('Product snapshot:', productSnap.data());
-
                 if (productSnap.exists()) {
                   const productData = productSnap.data();
-                  console.log('Product data:', productData);
                   return {
                     id: item.id,
                     quantity: item.quantity,
                     realid: item.realid,
+                    watt: item.watt,  // Keep watts from Realtime Database
+                    price: item.price,  // Keep price from Realtime Database
+                    // Merge product data but exclude price to ensure it's not overridden
                     ...productData,
+                    price: item.price, // Ensure we only use the price from the Realtime Database
                   };
                 }
                 return null;
@@ -82,15 +79,11 @@ const Cart = () => {
           );
 
           const filteredItems = fetchedItems.filter(item => item !== null);
-          console.log('Filtered items:', filteredItems);
-
           setCartItems(filteredItems);
         } else {
-          console.log('No items in cart');
           setCartItems([]);
         }
       } catch (err) {
-        console.error('Error in fetchCartItems:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -100,13 +93,9 @@ const Cart = () => {
     fetchCartItems();
   }, [getOrCreateDeviceId]);
 
-  useEffect(() => {
-    console.log('Cart Items State:', cartItems);
-  }, [cartItems]);
-
   const handleQuantityChange = async (id, newQuantity) => {
     if (isNaN(newQuantity) || newQuantity < 1) return;
-    
+
     const uniqueDeviceId = getOrCreateDeviceId();
     if (!uniqueDeviceId) return;
 
@@ -121,10 +110,7 @@ const Cart = () => {
   };
 
   const handleRemoveItem = async (id) => {
-    if (!id) {
-      console.error('Invalid item id for removal');
-      return;
-    }
+    if (!id) return;
 
     const uniqueDeviceId = getOrCreateDeviceId();
     if (!uniqueDeviceId) return;
@@ -132,7 +118,6 @@ const Cart = () => {
     try {
       const cartRef = ref(database, `users/${uniqueDeviceId}/cart/${id}`);
       await remove(cartRef);
-      console.log(`Item with ID ${id} removed from cart.`);
 
       setCartItems(prevItems => prevItems.filter(item => item && item.realid !== id));
     } catch (err) {
@@ -166,13 +151,14 @@ const Cart = () => {
                   <th className="py-3 px-6 bg-gray-100 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Product</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Quantity</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Price</th>
+                  <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Watts</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Total</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {cartItems.map(item => {
-                  if (!item) return null; // Skip rendering if item is null
+                  if (!item) return null;
                   return (
                     <tr key={item.realid} className="border-t">
                       <td className="py-4 px-6 flex items-center">
@@ -185,21 +171,21 @@ const Cart = () => {
                       </td>
                       <td className="py-4 px-6 text-center">
                         <input
-  type="number"
-  value={item.quantity || 1}
-  min="1"
-  max="100"
-  className="w-16 text-center border rounded-md"
-  onChange={(e) => {
-    const newQuantity = parseInt(e.target.value, 10);
-    if (!isNaN(newQuantity) && newQuantity >= 1 && newQuantity <= 100) {
-      handleQuantityChange(item.id, newQuantity);
-    }
-  }}
-/>
-
+                          type="number"
+                          value={item.quantity || 1}
+                          min="1"
+                          max="100"
+                          className="w-16 text-center border rounded-md"
+                          onChange={(e) => {
+                            const newQuantity = parseInt(e.target.value, 10);
+                            if (!isNaN(newQuantity) && newQuantity >= 1 && newQuantity <= 100) {
+                              handleQuantityChange(item.id, newQuantity);
+                            }
+                          }}
+                        />
                       </td>
                       <td className="py-4 px-6 text-center">{`₹${item.price || 0}`}</td>
+                      <td className="py-4 px-6 text-center">{`${item.watt || 0} W`}</td>
                       <td className="py-4 px-6 text-center">{`₹${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`}</td>
                       <td className="py-4 px-6 text-center">
                         <button
@@ -220,8 +206,7 @@ const Cart = () => {
           <div className="mt-8 flex justify-end">
             <Link href="/checkout">
               <button className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 flex items-center">
-                <FaShoppingCart className="mr-2" />
-                Checkout
+                <FaShoppingCart className="mr-2" /> Proceed to Checkout
               </button>
             </Link>
           </div>

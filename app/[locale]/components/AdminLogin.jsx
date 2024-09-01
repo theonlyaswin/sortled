@@ -1,16 +1,19 @@
-
 import { useState } from 'react';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { app } from '../firebase'; 
 
 const AdminLogin = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
-  const handleSubmit = (e) => {
+  const auth = getAuth(app);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'password') {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       onLogin(true);
-    } else {
-      alert('Invalid username or password');
+    } catch (error) {
+      alert('Invalid email or password');
     }
   };
 
@@ -20,12 +23,12 @@ const AdminLogin = ({ onLogin }) => {
         <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="username" className="block text-gray-700">Username</label>
+            <label htmlFor="email" className="block text-gray-700">Email</label>
             <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               required
             />

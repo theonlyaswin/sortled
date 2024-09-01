@@ -3,9 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ref, get, set } from 'firebase/database';
-import { doc, getDoc, addDoc, collection, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { database, db as firestore } from '../firebase';
-import Link from 'next/link';
 
 const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -37,72 +36,9 @@ const Checkout = () => {
     return null;
   }, []);
 
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const uniqueDeviceId = getOrCreateDeviceId();
-        if (!uniqueDeviceId) {
-          throw new Error('No device ID found');
-        }
-
-        const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
-        const snapshot = await get(cartRef);
-
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const cartArray = Object.entries(data).map(([key, value]) => ({
-            realid: key,
-            ...(value || {}),
-          }));
-
-          const fetchedItems = await Promise.all(
-            cartArray.map(async (item) => {
-              if (!item.id) {
-                console.error('Item without id:', item);
-                return null;
-              }
-              const productRef = doc(firestore, 'products', item.id);
-              const productSnap = await getDoc(productRef);
-
-              if (productSnap.exists()) {
-                return {
-                  ...item,
-                  ...productSnap.data(),
-                };
-              }
-              console.error('Product not found:', item.id);
-              return null;
-            })
-          );
-
-          const filteredItems = fetchedItems.filter(item => item !== null);
-          setCartItems(filteredItems);
-
-          const total = filteredItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
-          setTotalAmount(total);
-        } else {
-          setCartItems([]);
-          setTotalAmount(0);
-        }
-      } catch (err) {
-        console.error('Error fetching cart items:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCartItems();
-  }, [getOrCreateDeviceId]);
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+useEffect(() => {
+  const fetchCartItems = async () => {
+    setLoading(true);
     setError(null);
     try {
       const uniqueDeviceId = getOrCreateDeviceId();
@@ -110,49 +46,106 @@ const Checkout = () => {
         throw new Error('No device ID found');
       }
 
-      const orderData = {
-        ...formData,
-        items: cartItems.map(item => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        totalAmount,
-        orderDate: new Date().toISOString(),
-        status: 'pending',
-        userId: uniqueDeviceId,
-      };
+      const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
+      const snapshot = await get(cartRef);
 
-       const message = `Hi, an order for Kai's Lifestyle Studios\n` +
-                    `Order ID: ${orderData.id}\n` +
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const cartArray = Object.entries(data).map(([key, value]) => ({
+          realid: key,
+          ...(value || {}),
+        }));
+
+        // Combine the details with the cart data
+        const itemsWithDetails = cartArray.map((item) => ({
+          ...item,
+          name: item.name || 'Unnamed Product',
+          watts: item.watt || 'N/A',
+        }));
+
+        setCartItems(itemsWithDetails);
+
+        // Calculate total amount using price from cart data
+        const total = itemsWithDetails.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+        setTotalAmount(total);
+      } else {
+        setCartItems([]);
+        setTotalAmount(0);
+      }
+    } catch (err) {
+      console.error('Error fetching cart items:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCartItems();
+}, [getOrCreateDeviceId]);
+
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
+  try {
+    const uniqueDeviceId = getOrCreateDeviceId();
+    if (!uniqueDeviceId) {
+      throw new Error('No device ID found');
+    }
+
+    // Generate a unique order ID
+    const orderId = 'order-' + Math.random().toString(36).substr(2, 9);
+
+    const orderData = {
+      ...formData,
+      items: cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        watts: item.watts,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      totalAmount,
+      orderDate: new Date().toISOString(),
+      status: 'pending',
+      userId: uniqueDeviceId,
+      orderId,  // Add the generated order ID here
+    };
+
+    const message = `Hi, an order for Sort LED Online Store\n` +
+                    `Order ID: ${orderId}\n` +  // Include the orderId in the message
                     `Name: ${formData.name}\n` +
                     `Total Amount: ${orderData.totalAmount}`;
 
     // Encode the message to be URL-safe
     const encodedMessage = encodeURIComponent(message);
 
-      // Add the order to Firestore under the 'orders' collection
-      // Create a reference to the document in the 'orders' collection with the uniqueDeviceId as the document ID
-      const orderDocRef = doc(firestore, 'orders', uniqueDeviceId);
+    // Add the order to Firestore under the 'orders' collection
+    const orderDocRef = doc(firestore, 'orders', orderId);  // Use orderId for the document ID
 
-      // Set the document in Firestore
-      await setDoc(orderDocRef, orderData);
 
-      // Clear the cart in Realtime Database
-      const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
-      await set(cartRef, null);
+    // Set the document in Firestore
+    await setDoc(orderDocRef, orderData);
 
-      const whatsappUrl = `https://wa.me/+919074430171?text=${encodedMessage}`;
+    // Clear the cart in Realtime Database
+    const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
+    await set(cartRef, null);
+
+    const whatsappUrl = `https://wa.me/+919074430171?text=${encodedMessage}`;
 
     // Open WhatsApp link in a new tab
-      window.open(whatsappUrl, '_blank');
-      router.push('/orders');
-    } catch (err) {
-      console.error('Error submitting order:', err);
-      setError(err.message);
-    }
-  };
+    window.open(whatsappUrl, '_blank');
+    router.push('/orders');
+  } catch (err) {
+    console.error('Error submitting order:', err);
+    setError(err.message);
+  }
+};
+
 
   if (loading) {
     return <div className="min-h-screen bg-blue-50 flex items-center justify-center">
@@ -200,37 +193,37 @@ const Checkout = () => {
                 onChange={handleInputChange} />
             </div>
           </div>
-          
+
           <div>
             <label htmlFor="phoneNumber" className="block text-sm font-medium text-blue-700">Phone Number</label>
-            <input type="tel" id="phoneNumber" name="phoneNumber" required
+            <input type="text" id="phoneNumber" name="phoneNumber" required
               className="mt-1 block w-full border border-blue-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               onChange={handleInputChange} />
           </div>
-
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold text-blue-800 mb-4">Order Summary</h2>
+          
+          <h2 className="text-xl font-semibold text-blue-800 mb-4">Cart Summary</h2>
+          <ul role="list" className="divide-y divide-gray-200">
             {cartItems.map((item) => (
-              <div key={item.realid} className="flex justify-between items-center mb-2">
-                <span>{item.name || 'Unnamed Product'}</span>
-                <span>₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
-              </div>
+              <li key={item.realid} className="py-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium text-blue-900">{item.name}</h3>
+                  <p className="text-sm text-gray-500">Watts: {item.watts}</p>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500 mr-2">x{item.quantity}</span>
+                  <span className="text-sm text-blue-700">₹{item.price}</span>
+                </div>
+              </li>
             ))}
-            <div className="border-t border-blue-200 pt-4 mt-4">
-              <div className="flex justify-between items-center font-bold">
-                <span>Total</span>
-                <span>₹{totalAmount.toFixed(2)}</span>
-              </div>
-            </div>
+          </ul>
+
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <h3 className="text-xl font-bold text-blue-800">Total Amount</h3>
+            <p className="text-xl text-blue-900">₹{totalAmount}</p>
           </div>
 
-          <div className="flex justify-between mt-8">
-            <Link href="/cart">
-              <button type="button" className="bg-gray-200 text-blue-800 font-semibold py-2 px-4 rounded-md hover:bg-gray-300 transition duration-300">
-                Back to Cart
-              </button>
-            </Link>
-            <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+          <div className="mt-8">
+            <button type="submit" className="w-full bg-blue-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               Place Order
             </button>
           </div>

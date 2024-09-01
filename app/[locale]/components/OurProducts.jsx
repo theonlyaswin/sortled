@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, limit } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useTranslation } from 'react-i18next';
 
@@ -23,8 +23,13 @@ const OurProducts = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'products'));
-        const fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const productsQuery = query(collection(db, 'products'), limit(8)); // Limit the query to 8 products
+        const querySnapshot = await getDocs(productsQuery);
+        const fetchedProducts = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          wattOptions: doc.data().wattOptions || [], // Ensure wattOptions is fetched and defaults to an empty array
+        }));
         setProducts(fetchedProducts);
         setFilteredProducts(fetchedProducts);
       } catch (error) {
@@ -48,7 +53,6 @@ const OurProducts = () => {
       <div className="flex justify-center items-center flex-col">
         <h2 className={`heading-bold text-3xl lg:text-5xl md:text-5xl mb-2 ${t('txt-align')}`}>{t('our_products')}</h2>
         <p className={`text-gray-800 text-lg ${t('txt-align')}`}>{t("our_products2")}</p>
-        
       </div>
       
       {/* New Tab Design */}
@@ -78,6 +82,7 @@ const OurProducts = () => {
             imageUrl={product.images[0]}
             productName={product.name}
             price={product.price}
+            wattOptions={product.wattOptions} // Pass wattOptions to ProductCard
             id={product.id}
           />
         ))}

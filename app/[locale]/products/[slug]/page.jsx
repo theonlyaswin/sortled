@@ -29,72 +29,82 @@ const ProductPage = ({ params }) => {
   const [mainImage, setMainImage] = useState('');
   const [additionalImages, setAdditionalImages] = useState([]);
   const [selectedColor, setSelectedColor] = useState('white');
-  const [selectedWatts, setSelectedWatts] = useState(5);
+  const [selectedWatts, setSelectedWatts] = useState(null);
   const [price, setPrice] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   function getOrCreateDeviceId() {
-  if (typeof window !== 'undefined') {
-    let deviceId = localStorage.getItem('deviceId');
-    if (!deviceId) {
-      deviceId = generateUUID();
-      localStorage.setItem('deviceId', deviceId);
-    }
-    return deviceId;
-  }
-  return null;
-}
-
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-useEffect(() => {
-  const deviceId = getOrCreateDeviceId();
-  setUniqueDeviceId(deviceId);
-
-  const checkWishlistStatus = async () => {
-    if (!deviceId) return;
-    const wishlistRef = ref(database, `users/${deviceId}/wishlist`);
-    const snapshot = await get(wishlistRef);
-    if (snapshot.exists()) {
-      const wishlist = snapshot.val();
-      setIsInWishlist(wishlist.includes(params.slug));
-    }
-  };
-
-  checkWishlistStatus();
-
-  const fetchProduct = async () => {
-    try {
-      const docRef = doc(db, 'products', params.slug);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const productData = docSnap.data();
-        setProduct(productData);
-        setMainImage(productData.images[0]); // Set the main image
-        setAdditionalImages(productData.images.slice(1)); // Set the additional images
-        setSelectedColor(productData.colorVariants[0] || ''); // Set default selected color
-
-        // Set default watt and price
-        const initialWattsOption = productData.wattOptions.find(option => option.price && option.watts);
-        setSelectedWatts(initialWattsOption?.watts || null);
-        setPrice(initialWattsOption?.price || productData.price);
-        
-        fetchRelatedProducts(productData.category); // Fetch related products based on category
-      } else {
-        router.push('/not-found');
-        console.log('No such document!');
+    if (typeof window !== 'undefined') {
+      let deviceId = localStorage.getItem('deviceId');
+      if (!deviceId) {
+        deviceId = generateUUID();
+        localStorage.setItem('deviceId', deviceId);
       }
-    } catch (error) {
-      router.push('/not-found');
-      console.error('Error fetching product: ', error);
+      return deviceId;
     }
-  };
+    return null;
+  }
+
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  useEffect(() => {
+    const deviceId = getOrCreateDeviceId();
+    setUniqueDeviceId(deviceId);
+
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      try {
+        const docRef = doc(db, 'products', params.slug);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const productData = docSnap.data();
+          setProduct(productData);
+          setMainImage(productData.images[0]);
+          setAdditionalImages(productData.images.slice(1));
+          setSelectedColor(productData.colorVariants[0] || '');
+
+          const initialWattsOption = productData.wattOptions.find(option => option.price && option.watts);
+          setSelectedWatts(initialWattsOption?.watts || null);
+          setPrice(initialWattsOption?.price || productData.price);
+        
+          fetchRelatedProducts(productData.category);
+        } else {
+          router.push('/not-found');
+          console.log('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching product: ', error);
+        router.push('/not-found');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.slug]);
+
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (!uniqueDeviceId || !params.slug || selectedWatts === null) return;
+      const wishlistRef = ref(database, `users/${uniqueDeviceId}/wishlist`);
+      const snapshot = await get(wishlistRef);
+      if (snapshot.exists()) {
+        const wishlist = snapshot.val();
+        setIsInWishlist(wishlist.some(item => item.id === params.slug && item.watt === selectedWatts));
+      } else {
+        setIsInWishlist(false);
+      }
+    };
+
+    checkWishlistStatus();
+  }, [uniqueDeviceId, params.slug, selectedWatts]);
 
   const fetchRelatedProducts = async (category) => {
     try {
@@ -117,20 +127,23 @@ useEffect(() => {
     }
   };
 
-  fetchProduct();
-
-}, [params.slug]);
-
-
-
 const updateUserProduct = async (type) => {
-  if (!uniqueDeviceId) return;
+  if (!uniqueDeviceId || !product || !params.slug) return;
   const userRef = ref(database, `users/${uniqueDeviceId}`);
   const snapshot = await get(userRef);
 
+  const productData = {
+    id: params.slug,
+    name: product.name,
+    watt: selectedWatts,
+    price: price,
+  };
+
   if (!snapshot.exists()) {
     const initialData = {
-      [type]: type === 'cart' ? [{ id: params.slug, quantity: Math.min(quantity, 100), price }] : [params.slug],
+      [type]: type === 'cart' 
+        ? [{ ...productData, quantity: Math.min(quantity, 100), price }] 
+        : [productData],
     };
     await set(userRef, initialData);
   } else {
@@ -139,59 +152,76 @@ const updateUserProduct = async (type) => {
 
     products = Array.isArray(products) ? products : Object.values(products);
 
+    // Filter out any invalid entries
+    products = products.filter(item => item && typeof item === 'object' && item.id);
+
     if (type === 'cart') {
-      const existingProductIndex = products.findIndex(product => product.id === params.slug);
+      const existingProductIndex = products.findIndex(
+        (item) => item.id === params.slug && item.watt === selectedWatts
+      );
+
       if (existingProductIndex > -1) {
         const newQuantity = Math.min(products[existingProductIndex].quantity + quantity, 100);
         products[existingProductIndex].quantity = newQuantity;
       } else {
-        products.push({ id: params.slug, quantity: Math.min(quantity, 100), price });
+        products.push({ ...productData, quantity: Math.min(quantity, 100), price });
       }
     } else {
-      if (products.includes(params.slug)) {
-        products = products.filter(productId => productId !== params.slug);
+      const existingProductIndex = products.findIndex(
+        (item) => item.id === params.slug && item.watt === selectedWatts
+      );
+
+      if (existingProductIndex > -1) {
+        products.splice(existingProductIndex, 1);
       } else {
-        products.push(params.slug);
+        products.push(productData);
       }
     }
 
     await update(userRef, { [type]: products });
   }
-};
 
+  // Update local state after modifying the database
+  if (type === 'wishlist') {
+    setIsInWishlist(!isInWishlist);
+  }
+};
 
   const handleQuantityChange = (change) => {
-  setQuantity((prevQuantity) => Math.min(Math.max(1, prevQuantity + change), 100));
-};
+    setQuantity((prevQuantity) => Math.min(Math.max(1, prevQuantity + change), 100));
+  };
 
   const handleAddToCart = async () => {
-  await updateUserProduct('cart');
-  setShowPopup(true);
-  setTimeout(() => setShowPopup(false), 3000);
-};
+    await updateUserProduct('cart');
+    setShowPopup(true);
+    setTimeout(() => setShowPopup(false), 3000);
+  };
 
-const handleAddToWishlist = async () => {
-  await updateUserProduct('wishlist');
-  setIsInWishlist(!isInWishlist);
-};
+  const handleAddToWishlist = async () => {
+    if (!product || !params.slug) return;
+    await updateUserProduct('wishlist');
+    setIsInWishlist(!isInWishlist);
+  };
 
   const handleImageClick = (clickedImage, index) => {
-    // Swap main image with the clicked image
     const newMainImage = clickedImage;
     const newAdditionalImages = [...additionalImages];
-    newAdditionalImages[index] = mainImage; // Replace clicked image with the current main image
+    newAdditionalImages[index] = mainImage;
     setMainImage(newMainImage);
     setAdditionalImages(newAdditionalImages);
   };
 
-  const handleWattChange = (watt, price) => {
-  setSelectedWatts(watt);
-  setPrice(price);
+  const handleWattChange = (watt, newPrice) => {
+    setSelectedWatts(watt);
+    setPrice(newPrice);
   };
 
+  if (isLoading) {
+    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+  }
 
   if (!product) {
-    return <div>Loading...</div>; // Handle loading state
+    return <div className="container mx-auto px-4 py-8">Product not found.</div>;
   }
 
   return (
@@ -215,7 +245,7 @@ const handleAddToWishlist = async () => {
                 src={img}
                 alt={`Product Image ${index + 1}`}
                 className="w-20 h-20 rounded-lg shadow-lg cursor-pointer"
-                onClick={() => handleImageClick(img, index)} // Swap images on click
+                onClick={() => handleImageClick(img, index)}
               />
             ))}
           </div>
@@ -235,7 +265,7 @@ const handleAddToWishlist = async () => {
           )}
           <p className="text-gray-700 mb-6">{product.description}</p>
 
-                    <div className="mb-6">
+          <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">Color</h3>
             <div className="flex space-x-4">
               {product.colorVariants.map((color) => (
@@ -252,25 +282,25 @@ const handleAddToWishlist = async () => {
           </div>
 
           {product.wattOptions?.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Watts</h3>
-              <div className="flex space-x-4">
-                {product.wattOptions.map((option) => (
-                  <button
-                    key={option.watts}
-                    className={`px-4 py-2 border-2 rounded ${
-                      selectedWatts === option.watts
-                        ? 'border-blue-500 text-blue-500'
-                        : 'border-gray-300 text-gray-700'
-                    }`}
-                    onClick={() => handleWattChange(option.watts, option.price)}
-                  >
-                    {option.watts}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-2">Watts</h3>
+        <div className="flex space-x-4">
+          {product.wattOptions.map((option) => (
+            <button
+              key={option.watts}
+              className={`px-4 py-2 border-2 rounded ${
+                selectedWatts === option.watts
+                  ? 'border-blue-500 text-blue-500'
+                  : 'border-gray-300 text-gray-700'
+              }`}
+              onClick={() => handleWattChange(option.watts, option.price)}
+            >
+              {option.watts}W
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
 
           {/* Quantity Selector */}
           <div className="flex items-center mb-6 space-x-4">
@@ -289,8 +319,8 @@ const handleAddToWishlist = async () => {
                 <FiPlus />
               </button>
                {quantity >= 100 && (
-    <span className="text-red-500 text-sm">Max quantity reached</span>
-  )}
+                <span className="text-red-500 text-sm">Max quantity reached</span>
+               )}
             </div>
             <button
               onClick={handleAddToCart}
@@ -298,23 +328,23 @@ const handleAddToWishlist = async () => {
             >
               <FiShoppingCart className="mr-2" /> Add to Cart
             </button>
-            
           </div>
           <div className="flex items-center mb-6 space-x-4">
-          <button 
-          onClick={handleAddToWishlist}
-          className="border border-gray-300 rounded-full px-3 py-2 flex items-center justify-center">
+            <button 
+              onClick={handleAddToWishlist}
+              className="border border-gray-300 rounded-full px-3 py-2 flex items-center justify-center"
+            >
               {isInWishlist ? (
-    <FiHeart className='mr-1 text-red-500' fill="currentColor" />
-  ) : (
-    <FiHeart className='mr-1' />
-  )}
-  {isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                <FiHeart className='mr-1 text-red-500' fill="currentColor" />
+              ) : (
+                <FiHeart className='mr-1' />
+              )}
+              {isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             </button>
             <button className="border border-gray-300 rounded-full px-3 py-2 flex items-center justify-center">
               <FiShare2 className='mr-1'/>Share
             </button>
-            </div>
+          </div>
         </div>
       </div>
 
@@ -352,7 +382,6 @@ const handleAddToWishlist = async () => {
             </table>
           )}
           {activeTab === 'materials' && <p>{product.materials}</p>}
-          
         </div>
       </div>
 
@@ -374,17 +403,17 @@ const handleAddToWishlist = async () => {
 
       {/* Added to Cart Popup */}
       {showPopup && (
-  <div className="fixed top-4 right-4 bg-gray-100 text-black p-4 rounded-lg shadow-lg z-50 animate-slide-in lg:w-1/5 w-2/3 flex items-center space-x-3">
-    <FiCheckCircle className="text-green-500 w-6 h-6" />
-    <div>
-      <h2 className="text-green-500 mb-2">Successfully Added to Cart</h2>
-      <p>{product.name}</p>
-      {quantity >= 100 && (
-        <p className="text-sm text-red-500 mt-1">Maximum quantity (100) reached for this item.</p>
+        <div className="fixed top-4 right-4 bg-gray-100 text-black p-4 rounded-lg shadow-lg z-50 animate-slide-in lg:w-1/5 w-2/3 flex items-center space-x-3">
+          <FiCheckCircle className="text-green-500 w-6 h-6" />
+          <div>
+            <h2 className="text-green-500 mb-2">Successfully Added to Cart</h2>
+            <p>{product.name}</p>
+            {quantity >= 100 && (
+              <p className="text-sm text-red-500 mt-1">Maximum quantity (100) reached for this item.</p>
+            )}
+          </div>
+        </div>
       )}
-    </div>
-  </div>
-)}
     </div>
   );
 };

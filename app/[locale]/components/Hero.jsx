@@ -4,22 +4,31 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiArrowRight } from 'react-icons/fi';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const Hero = () => {
-
   const { t } = useTranslation();
-
+  const [images, setImages] = useState([]);
   const [currentImage, setCurrentImage] = useState(0);
-  const images = [
-    'https://images.pexels.com/photos/189333/pexels-photo-189333.jpeg',
-    'https://images.pexels.com/photos/713661/pexels-photo-713661.jpeg',
-    'https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg',
-  ];
   const carouselRef = useRef(null);
   const touchStartRef = useRef(null);
   const touchEndRef = useRef(null);
 
   useEffect(() => {
+    const fetchImages = async () => {
+      const headerImgCollection = collection(db, 'headerimg');
+      const snapshot = await getDocs(headerImgCollection);
+      const fetchedImages = snapshot.docs.map(doc => doc.data().url);
+      setImages(fetchedImages);
+    };
+
+    fetchImages();
+  }, []);
+
+  useEffect(() => {
+    if (images.length === 0) return;
+
     const interval = setInterval(() => {
       const nextIndex = (currentImage + 1) % images.length;
       setCurrentImage(nextIndex);
@@ -30,7 +39,7 @@ const Hero = () => {
     }, 5000); // Change image every 5 seconds
 
     return () => clearInterval(interval);
-  }, [currentImage]);
+  }, [currentImage, images]);
 
   const handleTouchStart = (e) => {
     touchStartRef.current = e.targetTouches[0].clientX;
@@ -80,7 +89,6 @@ const Hero = () => {
         <p className={`text-xl mb-6 text-gray-600 ${t('txt-align')}`}>
           {t('header3')}
         </p>
-        
       </div>
 
       {/* Right side - Image carousel */}
@@ -135,6 +143,5 @@ const Hero = () => {
     </div>
   );
 };
-
 
 export default Hero;

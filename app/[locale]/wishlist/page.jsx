@@ -44,24 +44,34 @@ const Wishlist = () => {
           const data = snapshot.val();
           const wishlistArray = Object.entries(data).map(([key, value]) => ({
             realid: key,  // Store the realid
-            id: value
+            ...value      // Spread the rest of the data directly
           }));
-
-          console.log(wishlistArray);
 
           const fetchedItems = await Promise.all(
             wishlistArray.map(async (item) => {
+              if (!item.id) {
+                console.error("Missing 'id' in item:", item);
+                return null;  // Skip if 'id' is missing
+              }
               const productRef = doc(firestore, 'products', item.id);
               const productSnap = await getDoc(productRef);
 
+              let image = '/default.jpg';
               if (productSnap.exists()) {
-                return {
-                  id: item.id,
-                  realid: item.realid,  // Include realid
-                  ...productSnap.data()
-                };
+                const productData = productSnap.data();
+                image = productData.images ? productData.images[0] : image;
+              } else {
+                console.error("No product data found for ID:", item.id);
               }
-              return null;
+
+              return {
+                id: item.id,
+                realid: item.realid,  // Include realid
+                name: item.name,
+                price: item.price,
+                watt: item.watt,
+                image
+              };
             })
           );
 
@@ -71,6 +81,7 @@ const Wishlist = () => {
           setWishlistItems([]);
         }
       } catch (err) {
+        console.error("Error fetching wishlist items:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -88,8 +99,6 @@ const Wishlist = () => {
       const wishlistRef = ref(database, `users/${uniqueDeviceId}/wishlist/${realid}`);
       await remove(wishlistRef);
 
-      // Confirm the deletion
-      console.log(`Item with realid ${realid} removed from wishlist.`);
       setWishlistItems(prevItems => prevItems.filter(item => item.realid !== realid));
     } catch (err) {
       console.error('Failed to remove item:', err);
@@ -131,9 +140,9 @@ const Wishlist = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-8">Your Wishlist</h1>
         {wishlistItems.length === 0 ? (
-          <div className=" flex justify-center items-center flex-col">
-          <p className="text-center text-gray-500">Your wishlist is empty.</p>
-          <img src="/Empty2.svg" alt="shopping bag" className='lg:w-1/3 w-3/3'/>
+          <div className="flex justify-center items-center flex-col">
+            <p className="text-center text-gray-500">Your wishlist is empty.</p>
+            <img src="/Empty2.svg" alt="shopping bag" className="lg:w-1/3 w-3/3" />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -141,6 +150,7 @@ const Wishlist = () => {
               <thead>
                 <tr>
                   <th className="py-3 px-6 bg-gray-100 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Product</th>
+                  <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Watt</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Price</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Add to Cart</th>
                   <th className="py-3 px-6 bg-gray-100 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Delete</th>
@@ -150,9 +160,10 @@ const Wishlist = () => {
                 {wishlistItems.map(item => (
                   <tr key={item.realid} className="border-t flex flex-col lg:table-row">
                     <td className="py-4 px-6 flex items-center justify-center lg:justify-start">
-                      <img src={item.images[0]} alt={item.name} className="w-12 h-12 rounded-md mr-4" />
+                      <img src={item.image} alt={item.name} className="w-12 h-12 rounded-md mr-4" />
                       <span className="text-center lg:text-left">{item.name}</span>
                     </td>
+                    <td className="py-4 px-6 text-center">{item.watt}</td>
                     <td className="py-4 px-6 text-center">{`₹${item.price}`}</td>
                     <td className="py-4 px-6 text-center flex justify-center lg:justify-center">
                       <button

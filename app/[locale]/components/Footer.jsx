@@ -25,10 +25,10 @@ const Footer = () => {
           <div>
             <h3 className="font-bold mb-4">{t('quicklinks')}</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:underline">{t('home')}</a></li>
-              <li><a href="#" className="hover:underline">{t("pro")}</a></li>
-              <li><a href="#" className="hover:underline">{t("about")}</a></li>
-              <li><a href="#" className="hover:underline">{t("c_us")}</a></li>
+              <li><a href="/" className="hover:underline">{t('home')}</a></li>
+              <li><a href="/products" className="hover:underline">{t("pro")}</a></li>
+              <li><a href="/about" className="hover:underline">{t("about")}</a></li>
+              <li><a href="/contact" className="hover:underline">{t("c_us")}</a></li>
             </ul>
           </div>
           <div>

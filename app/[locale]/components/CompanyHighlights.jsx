@@ -2,18 +2,24 @@
 
 import { FaAward, FaTruck, FaHeadset, FaShieldAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 const HighlightItem = ({ Icon, title, description, align }) => (
-  <div className={`flex flex-col items-center ${align} p-4`}>
+  <motion.div 
+    className={`flex flex-col items-center ${align} p-4`}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+  >
     <Icon className="text-5xl text-blue-600 mb-2" />
-    <h3 className="font-bold mt-2 ">{title}</h3>
-    <p className="text-sm mt-1 ">{description}</p>
-  </div>
+    <h3 className="font-bold mt-2">{title}</h3>
+    <p className="text-sm mt-1">{description}</p>
+  </motion.div>
 );
 
 const CompanyHighlights = () => {
 
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
   const highlights = [
     {
