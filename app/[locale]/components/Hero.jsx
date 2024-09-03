@@ -84,7 +84,7 @@ const Hero = () => {
       <div className="md:w-1/2 mb-8 md:mb-0 pr-8 animate-slide-in">
         <h1 className={`text-5xl font-medium mb-4 ${t('txt-align')}`}>
           {t('header1')}<br />
-          <span className="text-blue-500 font-extrabold">SORT LED</span>
+          <span className={`text-blue-500 font-extrabold ${t('txt-align')}`}>{t('logo-txt')}</span>
         </h1>
         <p className={`text-xl mb-6 text-gray-600 ${t('txt-align')}`}>
           {t('header3')}
