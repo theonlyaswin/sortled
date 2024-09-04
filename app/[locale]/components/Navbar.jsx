@@ -9,6 +9,8 @@ import { AiOutlineHeart } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
 import { usePathname } from 'next/navigation';
 import i18nConfig from '@/i18nConfig';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../firebase'; 
 
 
 const Navbar = () => {
@@ -23,6 +25,7 @@ const Navbar = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   const toggleLanguage = () => {
     const newLocale = currentLocale === 'en' ? 'ar' : 'en';
@@ -74,6 +77,49 @@ const Navbar = () => {
     setIsSearchOpen(false);
   };
 
+    function getOrCreateDeviceId() {
+    if (typeof window !== 'undefined') {
+      let deviceId = localStorage.getItem('deviceId');
+      if (!deviceId) {
+        deviceId = generateUUID();
+        localStorage.setItem('deviceId', deviceId);
+      }
+      return deviceId;
+    }
+    return null;
+  }
+
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  useEffect(() => {
+    const uniqueDeviceId = getOrCreateDeviceId();
+    if (!uniqueDeviceId) return;
+
+    const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
+
+    const unsubscribe = onValue(cartRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const cartItems = snapshot.val();
+        const itemCount = Object.values(cartItems).reduce((acc, item) => acc + item.quantity, 0);
+        setCartCount(itemCount);
+      } else {
+        setCartCount(0);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
+
+
+
   return (
     <>
       <nav className="bg-white shadow-md text-black fixed top-0 left-0 right-0 z-50 h-20">
@@ -102,6 +148,11 @@ const Navbar = () => {
             <Link href="/cart" className="hover:text-gray-600">
               <FiShoppingCart size={20} />
             </Link>
+            {cartCount > 0 && (
+          <div className="-top-2 -right-2 bg-blue-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+            {cartCount}
+            </div>
+        )}
           </div>
         </div>
 

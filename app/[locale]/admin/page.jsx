@@ -61,35 +61,39 @@ const Admin = () => {
     }
   };
 
-const handleInputChange = (e) => {
-  const { name, value, files } = e.target;
-  if (name === 'images') {
-    setNewProduct(prev => ({ ...prev, images: [...prev.images, ...files] }));
-  } else if (name.startsWith('spec_')) {
-    const specName = name.split('_')[1];
-    setNewProduct(prev => ({
-      ...prev,
-      specifications: { ...prev.specifications, [specName]: value }
-    }));
-  } else if (name === 'tags') {
-    setNewProduct(prev => ({ ...prev, tags: value.split(',').map(tag => tag.trim()) }));
-  } else if (name === 'colorVariants') {
-    setNewProduct(prev => ({ ...prev, colorVariants: value.split(',').map(color => color.trim()) }));
-  } else if (name === 'wattOptions') {
-    setNewProduct(prev => ({ 
-      ...prev, 
-      wattOptions: value.split(',').map(option => {
-        const [watts, price] = option.split(':');
-        return { 
-          watts: watts.trim(), 
-          price: price ? price.trim() : '' 
-        };
-      })
-    }));
-  } else {
-    setNewProduct(prev => ({ ...prev, [name]: value }));
-  }
-};
+
+    const handleInputChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'images') {
+      setNewProduct(prev => ({ ...prev, images: [...prev.images, ...files] }));
+    } else if (name.startsWith('spec_')) {
+      const specName = name.split('_')[1];
+      setNewProduct(prev => ({
+        ...prev,
+        specifications: { ...prev.specifications, [specName]: value }
+      }));
+    } else if (name === 'tags') {
+      setNewProduct(prev => ({ ...prev, tags: value.split(',').map(tag => tag.trim()) }));
+    } else if (name === 'colorVariants') {
+      setNewProduct(prev => ({ ...prev, colorVariants: value.split(',').map(color => color.trim()) }));
+    } else if (name === 'wattOptions') {
+      setNewProduct(prev => ({ 
+        ...prev, 
+        wattOptions: value.split(',').map(option => {
+          const [watts, price, oldprice] = option.split(':');
+          return { 
+            watts: watts.trim(), 
+            price: price ? price.trim() : '',
+            oldprice: oldprice ? oldprice.trim() : ''
+          };
+        })
+      }));
+    } else {
+      setNewProduct(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
@@ -462,17 +466,17 @@ const handleUpdateCategory = async (e) => {
                     />
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="wattOptions" className="block text-gray-700 font-semibold">Watt Options and Prices</label>
-                    <input
-                      type="text"
-                      id="wattOptions"
-                      name="wattOptions"
-                      value={newProduct.wattOptions.map(option => `${option.watts}:${option.price}`).join(', ')}
-                      onChange={handleInputChange}
-                      placeholder="Enter watt:price pairs separated by commas (e.g., 60:1000, 100:1500)"
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
+              <label htmlFor="wattOptions" className="block text-gray-700 font-semibold">Watt Options, Prices, and Old Prices</label>
+              <input
+                type="text"
+                id="wattOptions"
+                name="wattOptions"
+                value={newProduct.wattOptions.map(option => `${option.watts}:${option.price}:${option.oldprice}`).join(', ')}
+                onChange={handleInputChange}
+                placeholder="Enter watt:price:oldprice trios separated by commas (e.g., 60:1000:1200, 100:1500:1800)"
+                className="w-full p-2 border rounded"
+              />
+            </div>
                   
                   <div className="mb-4">
                     <label className="block text-gray-700 font-semibold">Specifications</label>
@@ -640,17 +644,17 @@ const handleUpdateCategory = async (e) => {
                     />
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="wattOptions" className="block text-gray-700 font-semibold">Watt Options and Prices</label>
-                    <input
-                      type="text"
-                      id="wattOptions"
-                      name="wattOptions"
-                      value={newProduct.wattOptions.map(option => `${option.watts}:${option.price}`).join(', ')}
-                      onChange={handleInputChange}
-                      placeholder="Enter watt:price pairs separated by commas (e.g., 60:1000, 100:1500)"
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
+                <label htmlFor="wattOptions" className="block text-gray-700 font-semibold">Watt Options, Prices, and Old Prices</label>
+                <input
+                  type="text"
+                  id="wattOptions"
+                  name="wattOptions"
+                  value={newProduct.wattOptions.map(option => `${option.watts}:${option.price}:${option.oldprice}`).join(', ')}
+                  onChange={handleInputChange}
+                  placeholder="Enter watt:price:oldprice trios separated by commas (e.g., 60:1000:1200, 100:1500:1800)"
+                  className="w-full p-2 border rounded"
+                />
+              </div>
                   
                   <div className="mb-4">
                     <label className="block text-gray-700 font-semibold">Specifications</label>

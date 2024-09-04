@@ -23,7 +23,7 @@ export default async function Home({ params: { locale } }) {
       locale={locale}
       resources={resources}>
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow mt-[64px] md:mt-[80px]">
+      <main className="flex-grow mt-[40px] lg:mt-[64px] md:mt-[80px]">
         <Hero />
       </main>
     <CategoryCarousel />

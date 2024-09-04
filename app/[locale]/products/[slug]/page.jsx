@@ -32,6 +32,7 @@ const ProductPage = ({ params }) => {
   const [selectedWatts, setSelectedWatts] = useState(null);
   const [price, setPrice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+   const [oldPrice, setOldPrice] = useState(null);
 
   function getOrCreateDeviceId() {
     if (typeof window !== 'undefined') {
@@ -73,6 +74,7 @@ const ProductPage = ({ params }) => {
           const initialWattsOption = productData.wattOptions.find(option => option.price && option.watts);
           setSelectedWatts(initialWattsOption?.watts || null);
           setPrice(initialWattsOption?.price || productData.price);
+          setOldPrice(initialWattsOption?.oldprice || null); // Set the initial old price
         
           fetchRelatedProducts(productData.category);
         } else {
@@ -211,9 +213,10 @@ const updateUserProduct = async (type) => {
     setAdditionalImages(newAdditionalImages);
   };
 
-  const handleWattChange = (watt, newPrice) => {
+  const handleWattChange = (watt, newPrice, newOldPrice) => {
     setSelectedWatts(watt);
     setPrice(newPrice);
+    setOldPrice(newOldPrice); // Update the old price when the watt option changes
   };
 
   if (isLoading) {
@@ -255,12 +258,12 @@ const updateUserProduct = async (type) => {
         <div className="md:w-1/2">
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
           
-          <p className="text-2xl font-semibold mb-2 text-orange-500">
+          <p className="text-2xl font-semibold mb-2 text-green-500">
             ₹{price}
           </p>
-          {product.oldPrice && (
+          {oldPrice && (
             <p className="text-gray-500 line-through mb-4">
-              ₹{product.oldPrice}
+              ₹{oldPrice}
             </p>
           )}
           <p className="text-gray-700 mb-6">{product.description}</p>
@@ -282,25 +285,25 @@ const updateUserProduct = async (type) => {
           </div>
 
           {product.wattOptions?.length > 0 && (
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Watts</h3>
-        <div className="flex space-x-4">
-          {product.wattOptions.map((option) => (
-            <button
-              key={option.watts}
-              className={`px-4 py-2 border-2 rounded ${
-                selectedWatts === option.watts
-                  ? 'border-blue-500 text-blue-500'
-                  : 'border-gray-300 text-gray-700'
-              }`}
-              onClick={() => handleWattChange(option.watts, option.price)}
-            >
-              {option.watts}W
-            </button>
-          ))}
-        </div>
-      </div>
-    )}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">Watts</h3>
+              <div className="flex space-x-4">
+                {product.wattOptions.map((option) => (
+                  <button
+                    key={option.watts}
+                    className={`px-4 py-2 border-2 rounded ${
+                      selectedWatts === option.watts
+                        ? 'border-blue-500 text-blue-500'
+                        : 'border-gray-300 text-gray-700'
+                    }`}
+                    onClick={() => handleWattChange(option.watts, option.price, option.oldprice)} // Pass oldPrice
+                  >
+                    {option.watts}W
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Quantity Selector */}
           <div className="flex items-center mb-6 space-x-4">

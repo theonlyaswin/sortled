@@ -150,12 +150,7 @@ const FilteredProducts = ({
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-12 p-4">
       {filteredProducts.map(product => (
         <ProductCard
-          key={product.id}
-          imageUrl={product.images[0]} // Assumes images is an array
-          productName={product.name}
-          price={product.price}
           id={product.id}
-          wattOptions={product.wattOptions || []} // Ensures wattOptions is passed and defaults to an empty array if undefined
         />
       ))}
     </div>

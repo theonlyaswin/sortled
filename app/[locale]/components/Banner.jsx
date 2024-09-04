@@ -12,10 +12,10 @@ const Banner = () => {
         <h1 className={`text-blue-500 text-4xl md:text-5xl font-extrabold mb-4 ${t('txt-align')}`}>
           {t('welcome')}
         </h1>
-        <p className={`text-white text-lg md:text-xl mb-6 max-w-6xl ${t('txt-align')}`}>
+        <p className={`text-white text-[15px] md:text-xl mb-6 max-w-6xl ${t('txt-align')}`}>
           {t('welcome2')}
         </p>
-        <button className={`bg-blue-500 text-white text-2xl py-3 px-8 rounded-full hover:bg-white hover:text-blue-600 transition duration-300 ${t('txt-align')}`}>
+        <button className={`bg-blue-500 text-white text-xl py-2 px-4 rounded-full hover:bg-white hover:text-blue-600 transition duration-300 ${t('txt-align')}`}>
           {t('purchase')}
         </button>
       </div>
