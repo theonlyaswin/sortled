@@ -5,6 +5,7 @@ import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { MdEmail, MdPhone, MdLocationOn } from 'react-icons/md';
 import { BsAward, BsShieldCheck, BsLightbulb } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -57,8 +58,8 @@ const Footer = () => {
         </div>
       </div>
       <div className="bg-blue-700 lg:py-4 md:py-4 pb-16 pt-2">
-        <div className="container mx-auto text-center">
-          <p>&copy; 2024 Azora Ads. All rights reserved.</p>
+        <div className="container mx-auto text-center text-[12px]">
+          <p>&copy; 2024 <span><Link href="https://azoraads.com"> Azora Ads. </Link></span> All rights reserved.</p>
         </div>
       </div>
     </footer>

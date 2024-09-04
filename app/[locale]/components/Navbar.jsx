@@ -137,7 +137,7 @@ const Navbar = () => {
           {/* Icons */}
           <div className="flex items-center space-x-4">
             <button onClick={toggleLanguage} className="hover:text-gray-600">
-              <LuQuote size={20} />
+              <img src="/lang.svg" alt="Language Changer" className='w-10 h-10'/>
             </button>
             <button onClick={toggleSearch} className="hover:text-gray-600">
               <FiSearch size={20} />

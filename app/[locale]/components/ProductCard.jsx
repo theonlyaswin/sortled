@@ -162,8 +162,8 @@ const updateUserProduct = async (type) => {
           <button
             className={`absolute bottom-4 bg-white text-gray-800 font-semibold py-1 px-3 sm:py-2 sm:px-4 rounded-md shadow-lg border border-gray-300 flex items-center space-x-1 sm:space-x-2 transition-all duration-300 hover:bg-black hover:text-white group lg:${hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-100'} opacity-100 translate-y-0`}
           >
-            <AiOutlineShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 group-hover:text-white" />
-            <span className='text-xs sm:text-sm'>Select options</span>
+            
+            <span className='text-xs sm:text-sm'>View More</span>
           </button>
         </div>
       </div>
@@ -171,7 +171,7 @@ const updateUserProduct = async (type) => {
         <h3 className="text-[16px] font-medium text-gray-900">{productData.name}</h3>
         <span className='flex'>
           <p className="font-bold ml-2">₹{productData.price}</p>
-          <p className="text-gray-600 line-through ml-2">₹{productData.oldprice}</p>
+          <p className="text-[#D32F2F] text-xs pt-1 line-through ml-2">₹{productData.oldprice}</p>
         </span>
       </div>
     </div>
