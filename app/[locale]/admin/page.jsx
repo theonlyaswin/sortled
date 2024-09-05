@@ -228,6 +228,23 @@ const handleEditCategory = (category) => {
     });
 };
 
+const handleUpdateOrderStatus = async (orderId, newStatus) => {
+  try {
+    const orderRef = doc(db, "orders", orderId);
+    await updateDoc(orderRef, { status: newStatus });
+    
+    // Update the local state to reflect the change
+    setOrders(orders.map(order => 
+      order.id === orderId ? { ...order, status: newStatus } : order
+    ));
+    
+    toast.success("Order status updated successfully!");
+  } catch (error) {
+    console.error("Error updating order status: ", error);
+    toast.error("Failed to update order status. Please try again.");
+  }
+};
+
 const handleUpdateCategory = async (e) => {
     e.preventDefault();
     try {

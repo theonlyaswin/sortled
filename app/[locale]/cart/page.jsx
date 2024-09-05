@@ -93,16 +93,18 @@ const Cart = () => {
     fetchCartItems();
   }, [getOrCreateDeviceId]);
 
-  const handleQuantityChange = async (id, newQuantity) => {
+  const handleQuantityChange = async (realid, newQuantity) => {
     if (isNaN(newQuantity) || newQuantity < 1) return;
 
     const uniqueDeviceId = getOrCreateDeviceId();
     if (!uniqueDeviceId) return;
 
     try {
-      const cartRef = ref(database, `users/${uniqueDeviceId}/cart/${id}`);
+      const cartRef = ref(database, `users/${uniqueDeviceId}/cart/${realid}`);
       await update(cartRef, { quantity: newQuantity });
-      setCartItems(prevItems => prevItems.map(item => item.id === id ? { ...item, quantity: newQuantity } : item));
+      setCartItems(prevItems => prevItems.map(item => 
+        item.realid === realid ? { ...item, quantity: newQuantity } : item
+      ));
     } catch (err) {
       console.error('Error updating quantity:', err);
       setError('Failed to update quantity. Please try again.');
@@ -170,20 +172,20 @@ const Cart = () => {
                         <span>{item.name || 'Unnamed Product'}</span>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <input
-                          type="number"
-                          value={item.quantity || 1}
-                          min="1"
-                          max="100"
-                          className="w-16 text-center border rounded-md"
-                          onChange={(e) => {
-                            const newQuantity = parseInt(e.target.value, 10);
-                            if (!isNaN(newQuantity) && newQuantity >= 1 && newQuantity <= 100) {
-                              handleQuantityChange(item.id, newQuantity);
-                            }
-                          }}
-                        />
-                      </td>
+              <input
+                type="number"
+                value={item.quantity || 1}
+                min="1"
+                max="100"
+                className="w-16 text-center border rounded-md"
+                onChange={(e) => {
+                  const newQuantity = parseInt(e.target.value, 10);
+                  if (!isNaN(newQuantity) && newQuantity >= 1 && newQuantity <= 100) {
+                    handleQuantityChange(item.realid, newQuantity);
+                  }
+                }}
+              />
+            </td>
                       <td className="py-4 px-6 text-center">{`₹${item.price || 0}`}</td>
                       <td className="py-4 px-6 text-center">{`${item.watt || 0} W`}</td>
                       <td className="py-4 px-6 text-center">{`₹${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`}</td>

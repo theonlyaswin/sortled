@@ -2,11 +2,10 @@
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
 import ProductCard from '../components/ProductCard';
-import { collection, getDocs, query, orderBy, limit, startAfter } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Main Component
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -14,6 +13,7 @@ const AllProducts = () => {
   const [lastVisible, setLastVisible] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const filterOptions = [
     { id: 'new', label: 'New Arrivals' },
@@ -23,29 +23,39 @@ const AllProducts = () => {
     { id: 'all', label: 'All' },
   ];
 
-  const fetchProducts = useCallback(async (isInitialLoad = false) => {
+  const fetchProducts = useCallback(async (isInitialLoad = false, searchQuery = null) => {
     if (isFetching) return;
 
     setIsFetching(true);
 
     try {
-      const productQuery = query(
-        collection(db, 'products'),
-        orderBy('name'),
-        limit(12),
-        isInitialLoad ? null : startAfter(lastVisible)
-      );
+      let productQuery;
+
+      if (searchQuery) {
+        productQuery = query(
+          collection(db, 'products'),
+          where('name', '>=', searchQuery),
+          where('name', '<=', searchQuery + '\uf8ff'),
+          limit(12)
+        );
+      } else {
+        productQuery = query(
+          collection(db, 'products'),
+          orderBy('name'),
+          limit(12),
+          isInitialLoad ? null : startAfter(lastVisible)
+        );
+      }
 
       const querySnapshot = await getDocs(productQuery);
       const fetchedProducts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // Filter out duplicates
       const newProducts = isInitialLoad
         ? fetchedProducts
         : fetchedProducts.filter(product => !products.some(p => p.id === product.id));
 
-      setProducts(prevProducts => [...prevProducts, ...newProducts]);
-      setFilteredProducts(prevFiltered => [...prevFiltered, ...newProducts]);
+      setProducts(prevProducts => isInitialLoad ? newProducts : [...prevProducts, ...newProducts]);
+      setFilteredProducts(prevFiltered => isInitialLoad ? newProducts : [...prevFiltered, ...newProducts]);
       setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
 
     } catch (error) {
@@ -56,8 +66,9 @@ const AllProducts = () => {
   }, [lastVisible, isFetching, products]);
 
   useEffect(() => {
-    fetchProducts(true);
-  }, [fetchProducts]);
+    const searchQuery = searchParams.get('search')?.trim().toLowerCase();
+    fetchProducts(true, searchQuery);
+  }, [fetchProducts, searchParams]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,6 +83,14 @@ const AllProducts = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [fetchProducts, isFetching]);
+
+  useEffect(() => {
+    if (activeFilter === 'all') {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(products.filter(product => product.tags.includes(activeFilter)));
+    }
+  }, [activeFilter, products]);
 
   return (
     <div className="flex justify-center items-center flex-col p-8 my-28 w-full">
@@ -97,62 +116,16 @@ const AllProducts = () => {
         </div>
       </div>
 
-      <Suspense>
-        <FilteredProducts
-          products={products}
-          filteredProducts={filteredProducts}
-          setFilteredProducts={setFilteredProducts}
-          activeFilter={activeFilter}
-          router={router}
-        />
+      <Suspense fallback={<div>Loading...</div>}>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-12 p-4">
+          {filteredProducts.map(product => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+            />
+          ))}
+        </div>
       </Suspense>
-    </div>
-  );
-};
-
-// FilteredProducts Component
-const FilteredProducts = ({
-  products,
-  filteredProducts,
-  setFilteredProducts,
-  activeFilter,
-  router
-}) => {
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const searchQuery = searchParams.get('search')?.trim().toLowerCase();
-
-    if (searchQuery && products.length > 0) {
-      const matchingProducts = products.filter(
-        product =>
-          product.name?.toLowerCase().includes(searchQuery) ||
-          product.category?.toLowerCase().includes(searchQuery)
-      );
-
-      if (matchingProducts.length > 0) {
-        setFilteredProducts(matchingProducts);
-      } else {
-        router.push('/not-found');
-      }
-    }
-  }, [products, searchParams]);
-
-  useEffect(() => {
-    if (activeFilter === 'all') {
-      setFilteredProducts(products);
-    } else {
-      setFilteredProducts(products.filter(product => product.tags.includes(activeFilter)));
-    }
-  }, [activeFilter, products]);
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-12 p-4">
-      {filteredProducts.map(product => (
-        <ProductCard
-          id={product.id}
-        />
-      ))}
     </div>
   );
 };
