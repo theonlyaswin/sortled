@@ -34,8 +34,7 @@ const AllProducts = () => {
       if (searchQuery) {
         productQuery = query(
           collection(db, 'products'),
-          where('name', '>=', searchQuery),
-          where('name', '<=', searchQuery + '\uf8ff'),
+          where('tags', 'array-contains', searchQuery),
           limit(12)
         );
       } else {
