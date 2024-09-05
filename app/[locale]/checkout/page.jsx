@@ -116,29 +116,14 @@ const handleSubmit = async (e) => {
       orderId,  // Add the generated order ID here
     };
 
-    const message = `Hi, an order for Sort LED Online Store\n` +
-                    `Order ID: ${orderId}\n` +  // Include the orderId in the message
-                    `Name: ${formData.name}\n` +
-                    `Total Amount: ${orderData.totalAmount}`;
+    localStorage.setItem('order-data',JSON.stringify(orderData));
 
-    // Encode the message to be URL-safe
-    const encodedMessage = encodeURIComponent(message);
+    const orderDocRef = doc(firestore, 'orders', orderId);
 
-    // Add the order to Firestore under the 'orders' collection
-    const orderDocRef = doc(firestore, 'orders', orderId);  // Use orderId for the document ID
-
-
-    // Set the document in Firestore
     await setDoc(orderDocRef, orderData);
-
-    // Clear the cart in Realtime Database
     const cartRef = ref(database, `users/${uniqueDeviceId}/cart`);
     await set(cartRef, null);
 
-    const whatsappUrl = `https://wa.me/+919074430171?text=${encodedMessage}`;
-
-    // Open WhatsApp link in a new tab
-    window.open(whatsappUrl, '_blank');
     router.push('/orders');
   } catch (err) {
     console.error('Error submitting order:', err);
@@ -196,7 +181,7 @@ const handleSubmit = async (e) => {
 
           <div>
             <label htmlFor="phoneNumber" className="block text-sm font-medium text-blue-700">Phone Number</label>
-            <input type="text" id="phoneNumber" name="phoneNumber" required
+            <input type="number" id="phoneNumber" name="phoneNumber" required
               className="mt-1 block w-full border border-blue-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               onChange={handleInputChange} />
           </div>

@@ -79,7 +79,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="container mx-auto lg:px-28 px-4 pb-12 flex flex-col md:flex-row items-center">
+    <div className="container mx-auto lg:px-28 px-4 pb-12 flex flex-col md:flex-row items-center" style={{marginTop:"18px"}}>
       {/* Left side - Text content */}
       <div className="md:w-1/2 mb-8 md:mb-0 pr-8 animate-slide-in">
         <h1 className={`text-5xl font-medium mb-4 ${t('txt-align')}`}>

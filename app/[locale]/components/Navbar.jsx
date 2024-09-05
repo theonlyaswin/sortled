@@ -26,9 +26,19 @@ const Navbar = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [localeData, setLocalData] = useState("");
 
+  const newLocale = currentLocale === 'en' ? 'ar' : 'en';
+  
+  useEffect(() => {
+    if (currentLocale == "en") {
+      setLocalData('AR')
+    }else{
+      setLocalData('EN')
+    }
+  }, [])
+  
   const toggleLanguage = () => {
-    const newLocale = currentLocale === 'en' ? 'ar' : 'en';
 
     // Set cookie for next-i18n-router
     const days = 30;
@@ -38,6 +48,11 @@ const Navbar = () => {
     document.cookie = `NEXT_LOCALE=${newLocale};expires=${expires};path=/`;
 
     // Redirect to the new locale path
+    if (currentLocale == "en") {
+      setLocalData('AR')
+    }else{
+      setLocalData('EN')
+    }
     if (
       currentLocale === i18nConfig.defaultLocale &&
       !i18nConfig.prefixDefault
@@ -137,7 +152,7 @@ const Navbar = () => {
           {/* Icons */}
           <div className="flex items-center space-x-4">
             <button onClick={toggleLanguage} className="hover:text-gray-600">
-              <img src="/lang.svg" alt="Language Changer" className='w-10 h-10'/>
+              <h4 id='locale-text'>{localeData}</h4>
             </button>
             <button onClick={toggleSearch} className="hover:text-gray-600">
               <FiSearch size={20} />
