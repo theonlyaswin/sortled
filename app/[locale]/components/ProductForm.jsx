@@ -19,7 +19,6 @@ const ProductForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle product addition logic here
-    console.log('Product added:', product);
   };
 
   return (

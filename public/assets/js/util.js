@@ -5,14 +5,18 @@ console.log(recData)
 var subtotal = 0;
 var tbody = document.getElementById('product-lists');
 
-var fbkey = recData.orderId;
+document.getElementById('id').textContent = recData.orderId;
+document.getElementById('name').textContent = recData.name;
+document.getElementById('add1').textContent = recData.address + "," + recData.state;
+document.getElementById('add2').textContent = recData.postalCode;
+document.getElementById('phno').textContent = recData.phoneNumber;
 
-for (let i = 0; i < recData.data.length; i++) {
-  returnData = recData.data[i];
+for (let i = 0; i < recData.items.length; i++) {
+  returnData = recData.items[i];
   var listTemplate = `
         <tr class="cart_item">
             <td class="product-name">
-                (${returnData.label}) ${returnData.productTitle}<strong class="product-quantity"> × ${returnData.quantity}</strong>
+                (${returnData.name}) ${returnData.watts}<strong class="product-quantity"> × ${returnData.quantity}</strong>
             </td>
             <td class="product-total">
                 <span class="amount">₹${returnData.price}</span>
@@ -29,7 +33,7 @@ for (let i = 0; i < recData.data.length; i++) {
 
 function whatsapp() {
   const message = `Hi, an order from Sort LED Online Store\n` +
-                    `Order ID: ${orderId}\n`
+                    `Order ID: ${recData.orderId}\n`
   const whatsappUrl = `https://wa.me/+919074430171?text=${message}`;
 
   // Open WhatsApp link in a new tab
