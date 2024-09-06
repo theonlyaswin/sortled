@@ -5,7 +5,7 @@ import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs } from "firebase
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import AdminLogin from '../components/AdminLogin';
 import { motion } from 'framer-motion';
-import { FiPlus, FiEdit, FiShoppingBag, FiTrash2, FiSave, FiEye, FiImage, FiUpload } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiShoppingBag, FiTrash2, FiSave, FiEye, FiImage, FiUpload, FiBook } from 'react-icons/fi';
 import { db, storage } from '../firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -37,7 +37,9 @@ const Admin = () => {
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState({ name: '', description: '', image: null });
   const [editingCategory, setEditingCategory] = useState(null);
-
+  const [blogs, setBlogs] = useState([]);
+  const [newBlog, setNewBlog] = useState({ title: '', content: '', image: null });
+  const [editingBlog, setEditingBlog] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -339,6 +341,85 @@ const handleUpdateCategory = async (e) => {
   };
 
 
+    const fetchBlogs = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "blogs"));
+      const fetchedBlogs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setBlogs(fetchedBlogs);
+    } catch (error) {
+      console.error("Error fetching blogs: ", error);
+      toast.error("Failed to fetch blogs. Please try again.");
+    }
+  };
+
+  const handleAddBlog = async (e) => {
+    e.preventDefault();
+    try {
+      let imageUrl = '';
+      if (newBlog.image) {
+        const imageRef = ref(storage, `blog-images/${newBlog.image.name}`);
+        await uploadBytes(imageRef, newBlog.image);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      await addDoc(collection(db, "blogs"), {
+        title: newBlog.title,
+        text: newBlog.text,
+        image: imageUrl
+      });
+
+      setNewBlog({ title: '', text: '', image: null });
+      fetchBlogs();
+      toast.success("Blog added successfully!");
+    } catch (error) {
+      console.error("Error adding blog: ", error);
+      toast.error("Failed to add blog. Please try again.");
+    }
+  };
+
+  const handleEditBlog = (blog) => {
+    setEditingBlog(blog);
+    setNewBlog({
+      title: blog.title,
+      text: blog.text,
+      image: blog.image
+    });
+  };
+
+  const handleUpdateBlog = async (e) => {
+    e.preventDefault();
+    try {
+      const blogRef = doc(db, "blogs", editingBlog.id);
+      let updatedBlog = { ...newBlog };
+
+      if (newBlog.image instanceof File) {
+        const imageRef = ref(storage, `blog-images/${newBlog.image.name}`);
+        await uploadBytes(imageRef, newBlog.image);
+        updatedBlog.image = await getDownloadURL(imageRef);
+      }
+
+      await updateDoc(blogRef, updatedBlog);
+      setEditingBlog(null);
+      setNewBlog({ title: '', text: '', image: null });
+      fetchBlogs();
+      toast.success("Blog updated successfully!");
+    } catch (error) {
+      console.error("Error updating blog: ", error);
+      toast.error("Failed to update blog. Please try again.");
+    }
+  };
+
+  const handleDeleteBlog = async (id) => {
+    try {
+      await deleteDoc(doc(db, "blogs", id));
+      fetchBlogs();
+      toast.success("Blog deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting blog: ", error);
+      toast.error("Failed to delete blog. Please try again.");
+    }
+  };
+
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -346,6 +427,7 @@ const handleUpdateCategory = async (e) => {
       fetchOrders();
       fetchCategories();
       fetchHeaderImages();
+      fetchBlogs();
     }
   }, [isAuthenticated]);
 
@@ -390,6 +472,12 @@ const handleUpdateCategory = async (e) => {
               className={`flex-1 py-4 px-6 text-center font-medium ${activeTab === 'header-images' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
             >
               <FiUpload className="inline-block mr-2" /> Header Images
+            </button>
+            <button
+              onClick={() => setActiveTab('blogs')}
+              className={`flex-1 py-4 px-6 text-center font-medium ${activeTab === 'blogs' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <FiBook className="inline-block mr-2" /> Blogs
             </button>
           </div>
 
@@ -956,6 +1044,96 @@ const handleUpdateCategory = async (e) => {
                       >
                         <FiTrash2 className="inline-block mr-1" /> Delete
                       </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'blogs' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <h2 className="text-2xl font-bold mb-4">Manage Blogs</h2>
+                <form onSubmit={editingBlog ? handleUpdateBlog : handleAddBlog} className="space-y-4 mb-8">
+                  <div className="mb-4">
+                    <label htmlFor="blogTitle" className="block text-gray-700 font-semibold">Blog Title</label>
+                    <input
+                      type="text"
+                      id="blogTitle"
+                      name="title"
+                      value={newBlog.title}
+                      onChange={(e) => setNewBlog({...newBlog, title: e.target.value})}
+                      placeholder="Enter blog title"
+                      required
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="blogContent" className="block text-gray-700 font-semibold">Blog Content</label>
+                    <textarea
+                      id="blogContent"
+                      name="text"
+                      value={newBlog.text}
+                      onChange={(e) => setNewBlog({...newBlog, text: e.target.value})}
+                      placeholder="Enter blog content"
+                      required
+                      rows="6"
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="blogImage" className="block text-gray-700 font-semibold">Blog Image</label>
+                    <input
+                      type="file"
+                      id="blogImage"
+                      name="image"
+                      onChange={(e) => setNewBlog({...newBlog, image: e.target.files[0]})}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    {editingBlog ? <><FiSave className="inline-block mr-2" /> Update Blog</> : <><FiPlus className="inline-block mr-2" /> Add Blog</>}
+                  </button>
+                  {editingBlog && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingBlog(null);
+                        setNewBlog({ title: '', text: '', image: null });
+                      }}
+                      className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </form>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {blogs.map((blog) => (
+                    <div key={blog.id} className="bg-white shadow rounded-lg p-4">
+                      <img src={blog.image} alt={blog.title} className="w-full h-40 object-cover rounded mb-4" />
+                      <h3 className="font-bold text-lg mb-2">{blog.title}</h3>
+                      <p className="text-gray-600 mb-4">{blog.text}</p>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEditBlog(blog)}
+                          className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                        >
+                          <FiEdit className="inline-block mr-1" /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlog(blog.id)}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        >
+                          <FiTrash2 className="inline-block mr-1" /> Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

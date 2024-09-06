@@ -51,7 +51,7 @@ const OurProducts = () => {
   return (
     <div className="flex justify-center items-center flex-col p-8 mt-12 w-full">
       <div className="flex justify-center items-center flex-col">
-        <h2 className={`heading-bold text-3xl lg:text-5xl md:text-5xl mb-2 ${t('txt-align')}`}>{t('our_products')}</h2>
+        <h2 className={`heading-bold text-3xl lg:text-5xl md:text-5xl text-blue-600 mb-2 ${t('txt-align')}`}>{t('our_products')}</h2>
         <p className={`text-gray-800 text-lg ${t('txt-align')}`}>{t("our_products2")}</p>
       </div>
       

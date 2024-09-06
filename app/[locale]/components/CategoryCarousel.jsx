@@ -28,7 +28,7 @@ const CategoryCarousel = () => {
 
   return (
     <section className="my-12 md:my-12 relative">
-      <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8">Categories</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-blue-600">Categories</h1>
       <div className="px-4 md:px-8 flex justify-start md:justify-center overflow-x-auto whitespace-nowrap gap-4 md:gap-8 relative scrollbar-hide">
         {categories.map((category) => (
             <CircleImageLabel

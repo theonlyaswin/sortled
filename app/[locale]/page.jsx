@@ -31,7 +31,7 @@ export default async function Home({ params: { locale } }) {
           <img src="./sidebanner2.png" alt="banner2" className="object-cover" />
         </div>
         <CompanyHighlights />
-        <div className="blog-layout" style={{width:"100%", overflowX:"auto", display:"flex", gap:"8px", margin:"10px 20px", marginBottom:"50px"}}>
+        <div className="blog-layout overflow-x-auto" style={{ display:"flex", gap:"8px", margin:"10px 20px", marginBottom:"50px"}}>
           <Blog/>
         </div>
       </div>
