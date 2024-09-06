@@ -1,6 +1,9 @@
 'use client'
 
 import React, { useEffect , useState} from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
+
 
 function Blog(){
     const [blogs, setBlogs] = useState([]);
