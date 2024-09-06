@@ -79,7 +79,6 @@ const ProductPage = ({ params }) => {
           fetchRelatedProducts(productData.category);
         } else {
           router.push('/not-found');
-          console.log('No such document!');
         }
       } catch (error) {
         console.error('Error fetching product: ', error);
