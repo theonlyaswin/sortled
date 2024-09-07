@@ -27,8 +27,8 @@ export default async function Home({ params: { locale } }) {
         </section>
         <OurProducts />
         <div className="flex flex-col md:flex-row justify-evenly items-center p-4 md:p-8 mt-12 md:mt-28 gap-6 overflow-hidden">
-          <img src="./sidebanner1.png" alt="banner1" className="object-cover" />
-          <img src="./sidebanner2.png" alt="banner2" className="object-cover" />
+          <img src="./sidebanner1.jpg" alt="banner1" className="object-cover" />
+          <img src="./sidebanner2.jpg" alt="banner2" className="object-cover" />
         </div>
         <CompanyHighlights />
         <div className="blog-layout overflow-x-auto" style={{ display:"flex", gap:"8px", margin:"10px 20px", marginBottom:"50px"}}>
