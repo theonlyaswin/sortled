@@ -14,7 +14,7 @@ export default async function About({ params: { locale } }) {
     <div className="flex justify-center items-center flex-col p-8 my-28 w-full">
       <div className="flex justify-center items-center flex-col animate-fade-in-slide">
         <h3 className="text-2xl md:text-3xl lg:text-4xl">{t("our_history")}</h3>
-        <h2 className="heading-bold text-5xl md:text-6xl lg:text-7xl mb-8 mt-2 text-blue-600 animate-fade-in-slide">SORT LED</h2>
+        <h2 className="heading-bold text-5xl md:text-6xl lg:text-7xl mb-8 mt-2 text-blue-600 animate-fade-in-slide">{t("logo-txt")}</h2>
         <p className="lg:w-2/3 w-full text-center">
           {t("our_history2")}
         </p>
