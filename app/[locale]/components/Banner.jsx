@@ -7,7 +7,7 @@ const Banner = () => {
 
   return (
     <div className="relative w-full h-[90vh] bg-[url('/banner-image.jpg')] bg-cover bg-center">
-      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+      <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
         <h1 className={`text-blue-500 text-4xl md:text-5xl font-extrabold mb-4 ${t('txt-align')}`}>
           {t('welcome')}
