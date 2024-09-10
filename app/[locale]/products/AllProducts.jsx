@@ -74,7 +74,7 @@ const AllProducts = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
-      if (scrollTop / scrollHeight > 0.95 && !isFetching) {
+      if (scrollTop / scrollHeight > 0.80 && !isFetching) {
         fetchProducts();
       }
     };
@@ -90,6 +90,27 @@ const AllProducts = () => {
       setFilteredProducts(products.filter(product => product.tags.includes(activeFilter)));
     }
   }, [activeFilter, products]);
+
+
+
+  useEffect(() => {
+    const smoothScrollToPosition = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const targetPosition = totalHeight * 0.83; // 83% of total scroll
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+      });
+    };
+
+    // Delay the scroll to ensure the content has loaded
+    const timeoutId = setTimeout(smoothScrollToPosition, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+
+
 
   return (
     <div className="flex justify-center items-center flex-col p-8 my-28 w-full">
