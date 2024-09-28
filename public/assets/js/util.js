@@ -19,15 +19,15 @@ for (let i = 0; i < recData.items.length; i++) {
                 (${returnData.name}) ${returnData.watts}<strong class="product-quantity"> × ${returnData.quantity}</strong>
             </td>
             <td class="product-total">
-                <span class="amount">₹${returnData.price}</span>
+                <span class="amount">AED : ${returnData.price}</span>
             </td>
         </tr>
         `;
   subtotal = subtotal + Number(returnData.price);
   tbody.innerHTML = tbody.innerHTML + listTemplate;
-  document.getElementById('cart-sub-tot').textContent = '₹' + subtotal;
+  document.getElementById('cart-sub-tot').textContent = 'AED : ' + subtotal;
   var tot_amount = Number(subtotal);
-  document.getElementById('order-tot').textContent = '₹' + tot_amount;
+  document.getElementById('order-tot').textContent = 'AED : ' + tot_amount;
 
 }
 

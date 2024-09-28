@@ -186,9 +186,9 @@ const Cart = () => {
                 }}
               />
             </td>
-                      <td className="py-4 px-6 text-center">{`₹${item.price || 0}`}</td>
+                      <td className="py-4 px-6 text-center">{`AED : ${item.price || 0}`}</td>
                       <td className="py-4 px-6 text-center">{`${item.watt || 0} W`}</td>
-                      <td className="py-4 px-6 text-center">{`₹${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`}</td>
+                      <td className="py-4 px-6 text-center">{`AED : ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}`}</td>
                       <td className="py-4 px-6 text-center">
                         <button
                           className="text-red-500 hover:text-red-700 transition-colors"

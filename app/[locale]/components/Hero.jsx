@@ -14,6 +14,17 @@ const Hero = () => {
   const carouselRef = useRef(null);
   const touchStartRef = useRef(null);
   const touchEndRef = useRef(null);
+  const { i18n } = useTranslation();
+  const [localeData, setLocalData] = useState("");
+  const currentLocale = i18n.language;
+  
+  useEffect(() => {
+    if (currentLocale == "ar") {
+      setLocalData('row-reverse')
+    }else{
+      setLocalData('row')
+    }
+  }, [])
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -79,9 +90,9 @@ const Hero = () => {
   };
 
   return (
-    <div className="container mx-auto lg:px-28 px-4 pb-12 flex flex-col md:flex-row items-center" style={{marginTop:"18px"}}>
+    <div className="container mx-auto lg:px-28 px-4 pb-12 flex flex-col md:flex-row items-center" style={{marginTop:"18px", flexDirection:localeData, justifyContent:"space-between", width:"100%", flexWrap:"wrap"}}>
       {/* Left side - Text content */}
-      <div className="md:w-1/2 mb-8 md:mb-0 pr-8 animate-slide-in">
+      <div className="md:w-1/2 mb-8 md:mb-0 pr-8" style={{width:"fit-content"}}>
         <h1 className={`text-5xl font-medium mb-4 ${t('txt-align')}`}>
           {t('header1')}<br />
           <span className={`text-blue-500 font-extrabold ${t('txt-align')}`}>{t('logo-txt')}</span>

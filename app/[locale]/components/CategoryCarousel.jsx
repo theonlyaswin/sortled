@@ -4,10 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase'; // Ensure this path matches your structure
 import CircleImageLabel from './CircleImageLabel';
+import { useTranslation } from 'react-i18next';
+import i18nConfig from '@/i18nConfig';
 
 const CategoryCarousel = () => {
   const [categories, setCategories] = useState([]);
-
+  const { i18n } = useTranslation();
+  const currentLocale = i18n.language;
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -34,7 +38,7 @@ const CategoryCarousel = () => {
             <CircleImageLabel
               src={category.image}
               alt={category.name}
-              label={category.name}
+              label={(currentLocale == 'ar')?category.namea:category.name}
             />
         ))}
       </div>

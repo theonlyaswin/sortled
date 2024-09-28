@@ -196,7 +196,7 @@ const handleSubmit = async (e) => {
                 </div>
                 <div className="flex items-center">
                   <span className="text-sm text-gray-500 mr-2">x{item.quantity}</span>
-                  <span className="text-sm text-blue-700">₹{item.price}</span>
+                  <span className="text-sm text-blue-700">AED : {item.price}</span>
                 </div>
               </li>
             ))}
@@ -204,7 +204,7 @@ const handleSubmit = async (e) => {
 
           <div className="mt-6 border-t border-gray-200 pt-4">
             <h3 className="text-xl font-bold text-blue-800">Total Amount</h3>
-            <p className="text-xl text-blue-900">₹{totalAmount}</p>
+            <p className="text-xl text-blue-900">AED : {totalAmount}</p>
           </div>
 
           <div className="mt-8">

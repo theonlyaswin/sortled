@@ -170,8 +170,8 @@ const updateUserProduct = async (type) => {
       <div className="text-center mt-2">
         <h3 className="text-[16px] font-medium text-gray-900">{productData.name}</h3>
         <span className='flex'>
-          <p className="font-bold ml-2">₹{productData.price}</p>
-          <p className="text-[#D32F2F] text-xs pt-1 line-through ml-2">₹{productData.oldprice}</p>
+          <p className="font-bold ml-2">AED : {productData.price}</p>
+          <p className="text-[#D32F2F] text-xs pt-1 line-through ml-2">AED : {productData.oldprice}</p>
         </span>
       </div>
     </div>

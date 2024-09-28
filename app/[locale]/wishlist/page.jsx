@@ -164,7 +164,7 @@ const Wishlist = () => {
                       <span className="text-center lg:text-left">{item.name}</span>
                     </td>
                     <td className="py-4 px-6 text-center">{item.watt}</td>
-                    <td className="py-4 px-6 text-center">{`₹${item.price}`}</td>
+                    <td className="py-4 px-6 text-center">{`AED : ${item.price}`}</td>
                     <td className="py-4 px-6 text-center flex justify-center lg:justify-center">
                       <button
                         className="bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 transition duration-300 flex items-center mr-2"

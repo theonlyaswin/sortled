@@ -10,6 +10,7 @@ import { db, storage } from '../firebase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -19,15 +20,18 @@ const Admin = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
     name: '',
+    namea: '',
     category: '',
     description: '',
+    descriptiona: '',
     images: [],
     colorVariants: [],
     wattOptions: [],
     specifications: {
       voltage: '',
       size: '',
-      otherDetails: ''
+      otherDetails: '',
+      otherDetailsa: ''
     },
     tags: [],
     reviews: []
@@ -35,10 +39,10 @@ const Admin = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [orders, setOrders] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState({ name: '', description: '', image: null });
+  const [newCategory, setNewCategory] = useState({ name: '',namea:'', description: '', descriptiona: '', image: null });
   const [editingCategory, setEditingCategory] = useState(null);
   const [blogs, setBlogs] = useState([]);
-  const [newBlog, setNewBlog] = useState({ title: '', content: '', image: null });
+  const [newBlog, setNewBlog] = useState({ title: '',titlea:'', content: '', contenta: '', image: null });
   const [editingBlog, setEditingBlog] = useState(null);
 
   const fetchProducts = async () => {
@@ -114,15 +118,18 @@ const Admin = () => {
       
       setNewProduct({
         name: '',
+        namea: '',
         category: '',
         description: '',
+        descriptiona: '',
         images: [],
         colorVariants: [],
         wattOptions: [],
         specifications: {
           voltage: '',
           size: '',
-          otherDetails: ''
+          otherDetails: '',
+          otherDetailsa: ''
         },
         tags: [],
         reviews: []
@@ -165,15 +172,18 @@ const Admin = () => {
       setEditingProduct(null);
       setNewProduct({
         name: '',
+        namea: '',
         category: '',
         description: '',
+        descriptiona: '',
         images: [],
         colorVariants: [],
         wattOptions: [],
         specifications: {
           voltage: '',
           size: '',
-          otherDetails: ''
+          otherDetails: '',
+          otherDetailsa: ''
         },
         tags: [],
         reviews: []
@@ -208,11 +218,13 @@ const Admin = () => {
 
       await addDoc(collection(db, "categories"), {
         name: newCategory.name,
+        namea: newCategory.namea,
         description: newCategory.description,
+        description:newCategory.descriptiona,
         image: imageUrl
       });
 
-      setNewCategory({ name: '', description: '', image: null });
+      setNewCategory({ name: '', namea: '', description: '', descriptiona: '', image: null });
       fetchCategories();
       toast.success("Category added successfully!");
     } catch (error) {
@@ -225,7 +237,9 @@ const handleEditCategory = (category) => {
     setEditingCategory(category);
     setNewCategory({
       name: category.name,
+      namea: category.namea,
       description: category.description,
+      descriptiona: category.descriptiona,
       image: category.image
     });
 };
@@ -261,7 +275,7 @@ const handleUpdateCategory = async (e) => {
 
       await updateDoc(categoryRef, updatedCategory);
       setEditingCategory(null);
-      setNewCategory({ name: '', description: '', image: null });
+      setNewCategory({ name: '', namea:'', description: '', descriptiona: '', image: null });
       fetchCategories();
       toast.success("Category updated successfully!");
     } catch (error) {
@@ -364,11 +378,13 @@ const handleUpdateCategory = async (e) => {
 
       await addDoc(collection(db, "blogs"), {
         title: newBlog.title,
+        titlea: newBlog.titlea,
         text: newBlog.text,
+        texta: newBlog.texta,
         image: imageUrl
       });
 
-      setNewBlog({ title: '', text: '', image: null });
+      setNewBlog({ title: '', titlea:'', text: '', texta:'', image: null });
       fetchBlogs();
       toast.success("Blog added successfully!");
     } catch (error) {
@@ -381,7 +397,9 @@ const handleUpdateCategory = async (e) => {
     setEditingBlog(blog);
     setNewBlog({
       title: blog.title,
+      titlea: blog.titlea,
       text: blog.text,
+      texta: blog.texta,
       image: blog.image
     });
   };
@@ -400,7 +418,7 @@ const handleUpdateCategory = async (e) => {
 
       await updateDoc(blogRef, updatedBlog);
       setEditingBlog(null);
-      setNewBlog({ title: '', text: '', image: null });
+      setNewBlog({ title: '', text: '', titlea:'',texta:'', image: null });
       fetchBlogs();
       toast.success("Blog updated successfully!");
     } catch (error) {
@@ -502,6 +520,17 @@ const handleUpdateCategory = async (e) => {
                       required
                       className="w-full p-2 border rounded"
                     />
+                    <input 
+                      type="text" 
+                      id='namea'
+                      name="namea"
+                      value={newProduct.namea}
+                      onChange={handleInputChange}
+                      placeholder='Enter product name in Arabic'
+                      required
+                      className="w-full p-2 border rounded"
+                      style={{marginTop:"10px"}}
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="category" className="block text-gray-700 font-semibold">Category</label>
@@ -520,7 +549,7 @@ const handleUpdateCategory = async (e) => {
                     </select>
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in ₹ )</label>
+                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in AED :  )</label>
                     <input
                       type="number"
                       id="price"
@@ -544,11 +573,21 @@ const handleUpdateCategory = async (e) => {
                       rows="4"
                       className="w-full p-2 border rounded"
                     />
+                    <textarea
+                      id="descriptiona"
+                      name="descriptiona"
+                      value={newProduct.descriptiona}
+                      onChange={handleInputChange}
+                      placeholder="Enter product description in Arabic"
+                      required
+                      rows="4"
+                      className="w-full p-2 border rounded"
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="images" className="block text-gray-700 font-semibold">Images</label>
                     <input
-                      type="file"
+                      type="file" accept="image/*"
                       id="images"
                       name="images"
                       multiple
@@ -622,9 +661,12 @@ const handleUpdateCategory = async (e) => {
                           className="w-full p-2 border rounded"
                         />
                       </div>
-                      <div>
+                      
+                    </div>
+                  </div>
+                  <div className='mb-4'>
                         <label htmlFor="spec_otherDetails" className="block text-gray-700">Other Details</label>
-                        <input
+                        <textarea
                           type="text"
                           id="spec_otherDetails"
                           name="spec_otherDetails"
@@ -633,8 +675,15 @@ const handleUpdateCategory = async (e) => {
                           placeholder="Enter other details"
                           className="w-full p-2 border rounded"
                         />
-                      </div>
-                    </div>
+                        <textarea
+                          type="text"
+                          id="spec_otherDetailsa"
+                          name="spec_otherDetailsa"
+                          value={newProduct.specifications.otherDetailsa}
+                          onChange={handleInputChange}
+                          placeholder="Enter other details in Arabic"
+                          className="w-full p-2 border rounded"
+                        />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="tags" className="block text-gray-700 font-semibold">Tags</label>
@@ -680,6 +729,17 @@ const handleUpdateCategory = async (e) => {
                       required
                       className="w-full p-2 border rounded"
                     />
+                    <input 
+                      type="text" 
+                      id='namea'
+                      name="namea"
+                      value={newProduct.namea}
+                      onChange={handleInputChange}
+                      placeholder='Enter product name in Arabic'
+                      required
+                      className="w-full p-2 border rounded"
+                      style={{marginTop:"10px"}}
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="category" className="block text-gray-700 font-semibold">Category</label>
@@ -698,7 +758,7 @@ const handleUpdateCategory = async (e) => {
                     </select>
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in ₹ )</label>
+                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in AED)</label>
                     <input
                       type="number"
                       id="price"
@@ -722,11 +782,21 @@ const handleUpdateCategory = async (e) => {
                       rows="4"
                       className="w-full p-2 border rounded"
                     />
+                    <textarea
+                      id="descriptiona"
+                      name="descriptiona"
+                      value={newProduct.descriptiona}
+                      onChange={handleInputChange}
+                      placeholder="Enter product description"
+                      required
+                      rows="4"
+                      className="w-full p-2 border rounded"
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="images" className="block text-gray-700 font-semibold">Images</label>
                     <input
-                      type="file"
+                      type="file" accept="image/*"
                       id="images"
                       name="images"
                       multiple
@@ -800,19 +870,29 @@ const handleUpdateCategory = async (e) => {
                           className="w-full p-2 border rounded"
                         />
                       </div>
-                      <div>
-                        <label htmlFor="spec_otherDetails" className="block text-gray-700">Other Details</label>
-                        <input
-                          type="text"
-                          id="spec_otherDetails"
-                          name="spec_otherDetails"
-                          value={newProduct.specifications.otherDetails}
-                          onChange={handleInputChange}
-                          placeholder="Enter other details"
-                          className="w-full p-2 border rounded"
-                        />
-                      </div>
+                      
                     </div>
+                  </div>
+                  <div className='mb-4'>
+                    <label htmlFor="spec_otherDetails" className="block text-gray-700">Other Details</label>
+                    <textare
+                      type="text"
+                      id="spec_otherDetails"
+                      name="spec_otherDetails"
+                      value={newProduct.specifications.otherDetails}
+                      onChange={handleInputChange}
+                      placeholder="Enter other details"
+                      className="w-full p-2 border rounded"
+                    />
+                    <textare
+                      type="text"
+                      id="spec_otherDetailsa"
+                      name="spec_otherDetailsa"
+                      value={newProduct.specifications.otherDetailsa}
+                      onChange={handleInputChange}
+                      placeholder="Enter other details in Arabic"
+                      className="w-full p-2 border rounded"
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="tags" className="block text-gray-700 font-semibold">Tags</label>
@@ -847,7 +927,7 @@ const handleUpdateCategory = async (e) => {
                         <h3 className="font-bold text-lg mb-2">{product.name}</h3>
                         <p className="text-gray-600 mb-2">Category: {product.category}</p>
                         <p className="text-gray-600 mb-2">
-                          Price: {product.wattOptions.map(option => `${option.watts}W: ₹${option.price}`).join(', ')}
+                          Price: {product.wattOptions.map(option => `${option.watts}W: AED : ${option.price}`).join(', ')}
                         </p>
                         <div className="flex space-x-2 mt-4">
                           <button
@@ -882,7 +962,7 @@ const handleUpdateCategory = async (e) => {
                     <div key={order.id} className="bg-white shadow rounded-lg p-4">
                       <h3 className="font-bold text-lg mb-2">Order ID: {order.id}</h3>
                       <p className="text-gray-600 mb-2">Customer: {order.customerName}</p>
-                      <p className="text-gray-600 mb-2">Total: ₹{order.totalAmount}</p>
+                      <p className="text-gray-600 mb-2">Total: {order.totalAmount} AED</p>
                       <p className="text-gray-600 mb-2">Date: {new Date(order.orderDate).toLocaleDateString()}</p>
                       <p className="text-gray-600 mb-2">
                         Status: 
@@ -937,6 +1017,17 @@ const handleUpdateCategory = async (e) => {
             required
             className="w-full p-2 border rounded"
           />
+          <input
+            type="text"
+            id="categoryNamea"
+            name="namea"
+            value={newCategory.namea}
+            onChange={(e) => setNewCategory({...newCategory, namea: e.target.value})}
+            placeholder="Enter category name in Arabic"
+            required
+            className="w-full p-2 border rounded"
+            style={{marginTop:"10px"}}
+          />
         </div>
         <div className="mb-4">
           <label htmlFor="categoryDescription" className="block text-gray-700 font-semibold">Category Description</label>
@@ -950,11 +1041,21 @@ const handleUpdateCategory = async (e) => {
             rows="3"
             className="w-full p-2 border rounded"
           />
+          <textarea
+            id="categoryDescription"
+            name="descriptiona"
+            value={newCategory.descriptiona}
+            onChange={(e) => setNewCategory({...newCategory, descriptiona: e.target.value})}
+            placeholder="Enter category description"
+            required
+            rows="3"
+            className="w-full p-2 border rounded"
+          />
         </div>
         <div className="mb-4">
           <label htmlFor="categoryImage" className="block text-gray-700 font-semibold">Category Image</label>
           <input
-            type="file"
+            type="file" accept="image/*"
             id="categoryImage"
             name="image"
             onChange={(e) => setNewCategory({...newCategory, image: e.target.files[0]})}
@@ -972,7 +1073,7 @@ const handleUpdateCategory = async (e) => {
             type="button"
             onClick={() => {
               setEditingCategory(null);
-              setNewCategory({ name: '', description: '', image: null });
+              setNewCategory({ name: '', namea:'', description: '', descriptiona:'', image: null });
             }}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2"
           >
@@ -1018,10 +1119,9 @@ const handleUpdateCategory = async (e) => {
                   <div className="mb-4">
                     <label htmlFor="headerImages" className="block text-gray-700 font-semibold">Upload Header Images</label>
                     <input
-                      type="file"
+                      type="file" accept="image/*"
                       id="headerImages"
                       onChange={(e) => setNewHeaderImages(Array.from(e.target.files))}
-                      accept="image/*"
                       multiple
                       className="w-full p-2 border rounded"
                     />
@@ -1070,6 +1170,17 @@ const handleUpdateCategory = async (e) => {
                       required
                       className="w-full p-2 border rounded"
                     />
+                    <input
+                      type="text"
+                      id="blogTitlea"
+                      name="titlea"
+                      value={newBlog.titlea}
+                      onChange={(e) => setNewBlog({...newBlog, titlea: e.target.value})}
+                      placeholder="Enter blog title in Arabic"
+                      required
+                      className="w-full p-2 border rounded"
+                      style={{marginTop:"10px"}}
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="blogContent" className="block text-gray-700 font-semibold">Blog Content</label>
@@ -1083,11 +1194,21 @@ const handleUpdateCategory = async (e) => {
                       rows="6"
                       className="w-full p-2 border rounded"
                     />
+                    <textarea
+                      id="blogContenta"
+                      name="text"
+                      value={newBlog.texta}
+                      onChange={(e) => setNewBlog({...newBlog, texta: e.target.value})}
+                      placeholder="Enter blog content in Arabic"
+                      required
+                      rows="6"
+                      className="w-full p-2 border rounded"
+                    />
                   </div>
                   <div className="mb-4">
                     <label htmlFor="blogImage" className="block text-gray-700 font-semibold">Blog Image</label>
                     <input
-                      type="file"
+                      type="file" accept="image/*"
                       id="blogImage"
                       name="image"
                       onChange={(e) => setNewBlog({...newBlog, image: e.target.files[0]})}
@@ -1105,7 +1226,7 @@ const handleUpdateCategory = async (e) => {
                       type="button"
                       onClick={() => {
                         setEditingBlog(null);
-                        setNewBlog({ title: '', text: '', image: null });
+                        setNewBlog({ title: '', text: '', titlea:'', texta:'', image: null });
                       }}
                       className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 ml-2"
                     >

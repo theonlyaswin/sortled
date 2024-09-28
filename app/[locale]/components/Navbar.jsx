@@ -27,7 +27,7 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [localeData, setLocalData] = useState("");
-
+ 
   const newLocale = currentLocale === 'en' ? 'ar' : 'en';
   
   useEffect(() => {
@@ -172,7 +172,7 @@ const Navbar = () => {
         </div>
 
         {/* Bottom line - only visible on desktop */}
-        <div className="hidden md:flex justify-center space-x-6 py-4 bg-blue-500 text-white">
+        <div className="hidden space-x-6 py-4 bg-blue-500 text-white" style={{display:"flex", flexDirection:(localeData == "EN"?"row-reverse":"row"), gap:"30px", justifyContent:"center"}}>
           <Link href="/" className="hover:text-black">{t('home')}</Link>
           <Link href="/products" className="hover:text-black">{t('allpro')}</Link>
           <Link href="/orders" className="hover:text-black">{t('orders')}</Link>
