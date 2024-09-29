@@ -3,10 +3,13 @@
 import React, { useEffect , useState} from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useTranslation } from 'react-i18next';
 
 
 function Blog(){
     const [blogs, setBlogs] = useState([]);
+    const { i18n } = useTranslation();
+    const currentLocale = i18n.language;
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -32,7 +35,8 @@ function Blog(){
         {blogs.map((blog) => (
             <div className="blog-child" style={{flex:"none", padding:"10px", border:"1px solid #CCCCCC", borderRadius:"10px" , width:"80vw" , maxWidth:"350px"}}>
             <img src={blog.image} alt="" style={{borderRadius:"10px", aspectRatio:"3/2", objectFit:"cover"}}/>
-            <p style={{marginTop:"10px"}}>{blog.text}</p>
+            <h1 style={{margin:"0", marginTop:"10px", fontSize:"20px", fontWeight:'600'}}>{(currentLocale == "en")?blog.title:blog.titlea}</h1>
+            <p style={{marginTop:"5px"}}>{(currentLocale == "en")?blog.text:blog.texta}</p>
         </div>
         ))}
         </div>

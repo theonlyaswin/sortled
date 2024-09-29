@@ -16,6 +16,8 @@ import { db } from '../../firebase';
 import ProductCard from '../../components/ProductCard';
 import { ref, get, set, update } from 'firebase/database';
 import { database } from '../../firebase';
+import { useTranslation } from 'react-i18next';
+import i18nConfig from '@/i18nConfig';
 
 const ProductPage = ({ params }) => {
   const router = useRouter();
@@ -32,7 +34,10 @@ const ProductPage = ({ params }) => {
   const [selectedWatts, setSelectedWatts] = useState(null);
   const [price, setPrice] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-   const [oldPrice, setOldPrice] = useState(null);
+  const [oldPrice, setOldPrice] = useState(null);
+
+  const { i18n } = useTranslation();
+  const currentLocale = i18n.language;
 
   function getOrCreateDeviceId() {
     if (typeof window !== 'undefined') {
@@ -189,7 +194,7 @@ const updateUserProduct = async (type) => {
 };
 
   const handleQuantityChange = (change) => {
-    setQuantity((prevQuantity) => Math.min(Math.max(1, prevQuantity + change), 100));
+    setQuantity((prevQuantity) => Math.min(Math.max(1, Number(prevQuantity) + Number(change)), 100000));
   };
 
   const handleAddToCart = async () => {
@@ -226,12 +231,26 @@ const updateUserProduct = async (type) => {
     return <div className="container mx-auto px-4 py-8">Product not found.</div>;
   }
 
+  const handleShare = async (_title, _text, _shareUrl, _imageUrl) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: _title,
+          text: _text,
+          url: _shareUrl,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      console.error('Web Share API is not supported in your browser.');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 mb-28 mt-12 lg:w-2/3 w-full">
-      <div className="flex justify-center items-center flex-col mb-12">
-        <h2 className="heading-bold text-4xl mb-2 text-center text-blue-500">Product Details</h2>
-      </div>
-      <div className="flex flex-col md:flex-row md:space-x-8">
+
+      <div className={currentLocale == "ar"?"flex flex-col md:space-x-8 md:flex-row-reverse":"flex flex-col md:space-x-8 md:flex-row"}>
         {/* Product Image */}
         <div className="md:w-1/2 mb-8 md:mb-0">
           <img
@@ -254,22 +273,20 @@ const updateUserProduct = async (type) => {
         </div>
 
         {/* Product Details */}
-        <div className="md:w-1/2">
-          <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-          
-          <p className="text-2xl font-semibold mb-2 text-green-500">
-            ₹{price}
-          </p>
+        <div className="md:w-1/2" style={{marginRight: (currentLocale == 'ar')?"30px":"0"}}>
+          <h1 className="text-3xl font-bold mb-4" style={{textAlign: (currentLocale == 'ar')?"right":"left"}}>{(currentLocale == 'en')?product.name:product.namea}</h1>
           {oldPrice && (
-            <p className="text-gray-500 line-through mb-4">
-              ₹{oldPrice}
+            <p className="text-gray-500 line-through mb-4" style={{textAlign: (currentLocale == 'ar')?"right":"left"}}>
+              AED : {oldPrice}
             </p>
           )}
-          <p className="text-gray-700 mb-6">{product.description}</p>
-
+          <p className="text-2xl font-semibold mb-2 text-green-500" style={{fontSize:"30px",textAlign: (currentLocale == 'ar')?"right":"left"}}>
+            AED : {price}
+          </p>
+          
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2">Color</h3>
-            <div className="flex space-x-4">
+            <h3 className="text-lg font-semibold mb-2" style={{textAlign: (currentLocale == 'ar')?"right":"left"}}>Color</h3>
+            <div className="flex space-x-4" style={{justifyContent: (currentLocale == 'ar')?"flex-end":"flex-start"}}>
               {product.colorVariants.map((color) => (
                 <button
                   key={color}
@@ -285,8 +302,8 @@ const updateUserProduct = async (type) => {
 
           {product.wattOptions?.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Watts</h3>
-              <div className="flex space-x-4">
+              <h3 className="text-lg font-semibold mb-2" style={{textAlign: (currentLocale == 'ar')?"right":"left"}}>Watts</h3>
+              <div className="flex space-x-4" style={{justifyContent: (currentLocale == 'ar')?"flex-end":"flex-start"}}>
                 {product.wattOptions.map((option) => (
                   <button
                     key={option.watts}
@@ -305,7 +322,7 @@ const updateUserProduct = async (type) => {
           )}
 
           {/* Quantity Selector */}
-          <div className="flex items-center mb-6 space-x-4">
+          <div className="flex items-center mb-6 space-x-4" style={{gap:"10px", flexDirection:(currentLocale == 'ar')?"row-reverse":"row"}}>
             <div className="flex items-center">
               <button
                 onClick={() => handleQuantityChange(-1)}
@@ -313,14 +330,14 @@ const updateUserProduct = async (type) => {
               >
                 <FiMinus />
               </button>
-              <span className="bg-gray-100 px-4 py-2">{quantity}</span>
+              <input type='text' className="bg-gray-100 px-4 py-2" value={quantity} onInput={(e) => setQuantity(e.target.value)} style={{width:"100px"}}/>
               <button
                 onClick={() => handleQuantityChange(1)}
                 className="bg-gray-200 p-2 rounded-r"
               >
                 <FiPlus />
               </button>
-               {quantity >= 100 && (
+               {quantity >= 10001 && (
                 <span className="text-red-500 text-sm">Max quantity reached</span>
                )}
             </div>
@@ -331,7 +348,7 @@ const updateUserProduct = async (type) => {
               <FiShoppingCart className="mr-2" /> Add to Cart
             </button>
           </div>
-          <div className="flex items-center mb-6 space-x-4">
+          <div className="flex items-center mb-6 space-x-4" style={{justifyContent:(currentLocale == 'ar')?"flex-end":"flex-start",}}>
             <button 
               onClick={handleAddToWishlist}
               className="border border-gray-300 rounded-full px-3 py-2 flex items-center justify-center"
@@ -343,8 +360,8 @@ const updateUserProduct = async (type) => {
               )}
               {isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             </button>
-            <button className="border border-gray-300 rounded-full px-3 py-2 flex items-center justify-center">
-              <FiShare2 className='mr-1'/>Share
+            <button className="border border-gray-300 rounded-full px-3 py-2 flex items-center justify-center"  onClick={() => handleShare("Sort Led",`Check out this out! ${product.name}` ,`${window.location.href}`, mainImage)}>
+              Share
             </button>
           </div>
         </div>
@@ -352,7 +369,7 @@ const updateUserProduct = async (type) => {
 
       {/* Tabs Section */}
       <div className="mt-12">
-        <div className="flex flex-wrap border-b">
+        <div className="flex flex-wrap border-b" style={{flexDirection:(currentLocale == 'ar')?"row-reverse":"row"}}>
           {['description', 'specification', 'materials'].map(
             (tab) => (
               <button
@@ -369,17 +386,21 @@ const updateUserProduct = async (type) => {
             )
           )}
         </div>
-        <div className="mt-4">
-          {activeTab === 'description' && <p>{product.description}</p>}
+        <div className="mt-4" style={{width:"100%", maxWidth:"500px"}}>
+          {activeTab === 'description' && <p>{(currentLocale == 'en')?product.description:product.descriptiona}</p>}
           {activeTab === 'specification' && (
             <table className="w-full border-collapse">
               <tbody>
-                {Object.entries(product.specifications || {}).map(([key, value]) => (
-                  <tr key={key} className="border-b">
-                    <td className="py-2 font-semibold">{key}</td>
-                    <td className="py-2">{value}</td>
-                  </tr>
-                ))}
+                {
+                  Object.entries(product.specifications || {})
+                  .filter(([key]) => key !== 'otherDetailsa')
+                  .map(([key, value]) => (
+                    <tr key={key} className="border-b">
+                      <td className="py-2 font-semibold">{key}</td>
+                      <td className="py-2">{currentLocale === 'ar' && key == 'otherDetails' ? product.specifications.otherDetailsa : value}</td>
+                    </tr>
+                  ))
+                }
               </tbody>
             </table>
           )}
@@ -389,7 +410,7 @@ const updateUserProduct = async (type) => {
 
       {/* Related Products Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4">Related Products</h2>
+        <h2 className="text-2xl font-semibold mb-4" style={{textAlign:(currentLocale == 'ar')?"right":"left"}}>Related Products</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 lg:gap-24 gap-8">
           {relatedProducts.map((relatedProduct, index) => (
             <ProductCard
@@ -410,8 +431,8 @@ const updateUserProduct = async (type) => {
           <div>
             <h2 className="text-green-500 mb-2">Successfully Added to Cart</h2>
             <p>{product.name}</p>
-            {quantity >= 100 && (
-              <p className="text-sm text-red-500 mt-1">Maximum quantity (100) reached for this item.</p>
+            {quantity >= 10001 && (
+              <p className="text-sm text-red-500 mt-1">Maximum quantity (10000) reached for this item.</p>
             )}
           </div>
         </div>

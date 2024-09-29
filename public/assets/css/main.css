@@ -6626,7 +6626,7 @@ td.product-thumbnail img {
 }
 
 .coupon-content {
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   display: none;
   margin-bottom: 20px;
   padding: 30px;
@@ -6651,7 +6651,7 @@ td.product-thumbnail img {
 }
 
 .coupon-info p.form-row-first input, .coupon-info p.form-row-last input {
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   height: 45px;
   margin: 0 0 14px;
   max-width: 100%;
@@ -6711,7 +6711,7 @@ p.checkout-coupon input[type=text] {
   height: 45px;
   padding: 0 15px;
   width: 100%;
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   margin-bottom: 15px;
   outline: none;
   -webkit-box-shadow: none;
@@ -6729,7 +6729,7 @@ p.checkout-coupon input[type=text]:focus {
 }
 
 .checkbox-form h3 {
-  border-bottom: 1px solid #eaedff;
+  border-bottom: 1px solid #eAED : ff;
   font-size: 24px;
   font-family: var(--tp-ff-jost);
   margin: 0 0 20px;
@@ -6745,7 +6745,7 @@ p.checkout-coupon input[type=text]:focus {
 .country-select select {
   width: 100%;
   background-color: transparent;
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   padding: 0 10px;
   height: 50px;
 }
@@ -6761,7 +6761,7 @@ p.checkout-coupon input[type=text]:focus {
 }
 
 .country-select .nice-select {
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   height: 45px;
   padding-left: 10px;
   width: 100%;
@@ -6783,7 +6783,7 @@ p.checkout-coupon input[type=text]:focus {
 
 .checkout-form-list input[type=text], .checkout-form-list input[type=password], .checkout-form-list input[type=email] , .checkout-form-list input[type=tel] , .checkout-form-list input[type=number]{
   background: #ffffff;
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   border-radius: 0;
   height: 45px;
   padding: 0 0 0 10px;
@@ -6844,7 +6844,7 @@ p.checkout-coupon input[type=text]:focus {
 }
 
 .order-notes textarea {
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   height: 120px;
   padding: 15px;
   width: 100%;
@@ -6889,7 +6889,7 @@ p.checkout-coupon input[type=text]:focus {
   }
 }
 .your-order h3 {
-  border-bottom: 1px solid #eaedff;
+  border-bottom: 1px solid #eAED : ff;
   font-size: 30px;
   margin: 0 0 20px;
   padding-bottom: 10px;
@@ -6904,7 +6904,7 @@ p.checkout-coupon input[type=text]:focus {
 }
 
 .your-order-table table th, .your-order-table table td {
-  border-bottom: 1px solid #eaedff;
+  border-bottom: 1px solid #eAED : ff;
   border-right: medium none;
   color: #6f7172;
   font-size: 14px;
@@ -7070,13 +7070,13 @@ p.checkout-coupon input[type=text]:focus {
 
 .payment-method .card {
   background-color: #ffffff;
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
   border-radius: 0;
   margin-bottom: 10px;
 }
 
 .payment-method .accordion .card:first-of-type {
-  border: 1px solid #eaedff;
+  border: 1px solid #eAED : ff;
 }
 
 .card-header:first-child {
@@ -7085,7 +7085,7 @@ p.checkout-coupon input[type=text]:focus {
 
 .payment-method .card-header {
   background-color: #ffffff;
-  border-bottom: 1px solid #eaedff;
+  border-bottom: 1px solid #eAED : ff;
 }
 
 /*----------------------------------------*/
