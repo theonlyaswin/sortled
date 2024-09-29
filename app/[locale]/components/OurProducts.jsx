@@ -13,11 +13,11 @@ const OurProducts = () => {
   const [activeFilter, setActiveFilter] = useState('all');
 
   const filterOptions = [
-    { id: 'new', label: 'New Arrivals' },
-    { id: 'featured', label: 'Featured' },
-    { id: 'sale', label: 'On Sale' },
-    { id: 'trending', label: 'Trending' },
-    { id: 'all', label: 'All' },
+    { id: 'new', label: t('newarrivals') },
+    { id: 'featured', label: t('featured') },
+    { id: 'sale', label: t('onsale') },
+    { id: 'trending', label: t('trending') },
+    { id: 'all', label: t('all') },
   ];
 
   useEffect(() => {

@@ -172,7 +172,7 @@ const Navbar = () => {
         </div>
 
         {/* Bottom line - only visible on desktop */}
-        <div className="hidden space-x-6 py-4 bg-blue-500 text-white" style={{display:"flex", flexDirection:(localeData == "EN"?"row-reverse":"row"), gap:"30px", justifyContent:"center"}}>
+        <div className="hidden space-x-6 py-4 bg-blue-500 text-white" style={{display:( window.innerWidth < 1000)?"none":"flex", flexDirection:(localeData == "EN"?"row-reverse":"row"), gap:"30px", justifyContent:"center"}}>
           <Link href="/" className="hover:text-black">{t('home')}</Link>
           <Link href="/products" className="hover:text-black">{t('allpro')}</Link>
           <Link href="/orders" className="hover:text-black">{t('orders')}</Link>

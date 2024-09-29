@@ -220,7 +220,7 @@ const Admin = () => {
         name: newCategory.name,
         namea: newCategory.namea,
         description: newCategory.description,
-        description:newCategory.descriptiona,
+        descriptiona:newCategory.descriptiona,
         image: imageUrl
       });
 
@@ -549,7 +549,7 @@ const handleUpdateCategory = async (e) => {
                     </select>
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in AED :  )</label>
+                    <label htmlFor="price" className="block text-gray-700 font-semibold">Price ( in AED )</label>
                     <input
                       type="number"
                       id="price"
@@ -1046,7 +1046,7 @@ const handleUpdateCategory = async (e) => {
             name="descriptiona"
             value={newCategory.descriptiona}
             onChange={(e) => setNewCategory({...newCategory, descriptiona: e.target.value})}
-            placeholder="Enter category description"
+            placeholder="Enter category description in Arabic"
             required
             rows="3"
             className="w-full p-2 border rounded"

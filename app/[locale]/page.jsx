@@ -10,7 +10,6 @@ import TextAlignment from "./components/TextAlignment"; // Client Component for 
 
 export default async function Home({ params: { locale } }) {
   const { resources } = await initTranslations(locale, ["home"]);
-
   return (
     <TranslationsProvider
       namespaces={["home"]}
