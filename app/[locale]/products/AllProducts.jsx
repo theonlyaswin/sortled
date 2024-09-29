@@ -5,6 +5,8 @@ import ProductCard from '../components/ProductCard';
 import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+
 
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
@@ -14,13 +16,15 @@ const AllProducts = () => {
   const [isFetching, setIsFetching] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t , i18n} = useTranslation();
+  const currentLocale = i18n.language;
 
   const filterOptions = [
-    { id: 'new', label: 'New Arrivals' },
-    { id: 'featured', label: 'Featured' },
-    { id: 'sale', label: 'On Sale' },
-    { id: 'trending', label: 'Trending' },
-    { id: 'all', label: 'All' },
+    { id: 'new', label: t('new') },
+    { id: 'featured', label: t('featured') },
+    { id: 'sale', label: t('onsale') },
+    { id: 'trending', label: t('trending') },
+    { id: 'all', label: t('all') },
   ];
 
   const fetchProducts = useCallback(async (isInitialLoad = false, searchQuery = null) => {
@@ -115,7 +119,7 @@ const AllProducts = () => {
   return (
     <div className="flex justify-center items-center flex-col p-8 my-28 w-full">
       <div className="flex justify-center items-center flex-col">
-        <h2 className="heading-bold text-5xl mb-2 text-center">All Products</h2>
+        <h2 className="heading-bold text-5xl mb-2 text-center">{t('allproducts')}</h2>
       </div>
       <div className="w-full max-w-3xl mt-10 mb-8">
         <div className="flex flex-wrap justify-center border-b border-gray-200">
