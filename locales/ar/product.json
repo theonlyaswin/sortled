@@ -7,5 +7,6 @@
     "watts" : "واتس",
     "materials" : "مواد",
     "specification" : "مواصفة",
-    "description" : "وصف"
+    "description" : "وصف",
+    "relatedproduct":"المنتجات ذات الصلة"
 }
