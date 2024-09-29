@@ -19,13 +19,17 @@ import { database } from '../firebase';
 import { useTranslation } from 'react-i18next';
 
 const ProductPage = ({ id }) => {
+  const { i18n } = useTranslation();
+  const currentLocale = i18n.language;
+  const { t } = useTranslation();
+
   const router = useRouter();
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [uniqueDeviceId, setUniqueDeviceId] = useState(null);
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('description');
+  const [activeTab, setActiveTab] = useState(t('description'));
   const [showPopup, setShowPopup] = useState(false);
   const [mainImage, setMainImage] = useState('');
   const [additionalImages, setAdditionalImages] = useState([]);
@@ -35,9 +39,7 @@ const ProductPage = ({ id }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [oldPrice, setOldPrice] = useState(null);
 
-  const { i18n } = useTranslation();
-  const currentLocale = i18n.language;
-  const { t } = useTranslation();
+
 
   function getOrCreateDeviceId() {
     if (typeof window !== 'undefined') {
@@ -285,7 +287,7 @@ const updateUserProduct = async (type) => {
           </p>
           
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-2" style={{textAlign: (currentLocale == 'ar')?"right":"left"}}>Color</h3>
+            <h3 className="text-lg font-semibold mb-2" style={{textAlign: (currentLocale == 'ar')?"right":"left"}}>{t('color')}</h3>
             <div className="flex space-x-4" style={{justifyContent: (currentLocale == 'ar')?"flex-end":"flex-start"}}>
               {product.colorVariants.map((color) => (
                 <button
@@ -345,7 +347,7 @@ const updateUserProduct = async (type) => {
               onClick={handleAddToCart}
               className="bg-blue-500 text-white px-6 py-2 rounded-full flex items-center justify-center"
             >
-              <FiShoppingCart className="mr-2" /> Add to Cart
+              <FiShoppingCart className="mr-2" /> {t('addtocart')}
             </button>
           </div>
           <div className="flex items-center mb-6 space-x-4" style={{justifyContent:(currentLocale == 'ar')?"flex-end":"flex-start",}}>
@@ -370,7 +372,7 @@ const updateUserProduct = async (type) => {
       {/* Tabs Section */}
       <div className="mt-12">
         <div className="flex flex-wrap border-b" style={{flexDirection:(currentLocale == 'ar')?"row-reverse":"row"}}>
-          {['description', 'specification', 'materials'].map(
+          {[t('description'), t('specification'), t('materials')].map(
             (tab) => (
               <button
                 key={tab}
@@ -387,8 +389,8 @@ const updateUserProduct = async (type) => {
           )}
         </div>
         <div className="mt-4" style={{width:"100%", maxWidth:"500px"}}>
-          {activeTab === 'description' && <p>{(currentLocale == 'en')?product.description:product.descriptiona}</p>}
-          {activeTab === 'specification' && (
+          {activeTab === t('description') && <p>{(currentLocale == 'en')?product.description:product.descriptiona}</p>}
+          {activeTab === t('specification') && (
             <table className="w-full border-collapse">
               <tbody>
                 {
@@ -404,13 +406,13 @@ const updateUserProduct = async (type) => {
               </tbody>
             </table>
           )}
-          {activeTab === 'materials' && <p>{product.materials}</p>}
+          {activeTab === t('materials') && <p>{product.materials}</p>}
         </div>
       </div>
 
       {/* Related Products Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4" style={{textAlign:(currentLocale == 'ar')?"right":"left"}}>Related Products</h2>
+        <h2 className="text-2xl font-semibold mb-4" style={{textAlign:(currentLocale == 'ar')?"right":"left"}}>{t('relatedproduct')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 lg:gap-24 gap-8">
           {relatedProducts.map((relatedProduct, index) => (
             <ProductCard
