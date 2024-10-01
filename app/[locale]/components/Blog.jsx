@@ -31,7 +31,7 @@ function Blog(){
     return (
         <div className='flex justify-center items-center w-full flex-col'>
           <h2 className="heading-bold text-3xl lg:text-5xl md:text-5xl mb-6 text-blue-600">Blogs</h2>
-        <div className='flex gap-4 flex-wrap justify-center'>
+        <div className='flex gap-4' style={{flexWrap:"nowrap", overflowX:"auto" , width:"100vw", padding:"0 20px"}}>
         {blogs.map((blog) => (
             <div className="blog-child" style={{flex:"none", padding:"10px", border:"1px solid #CCCCCC", borderRadius:"10px" , width:"80vw" , maxWidth:"350px"}}>
             <img src={blog.image} alt="" style={{borderRadius:"10px", aspectRatio:"3/2", objectFit:"cover"}}/>

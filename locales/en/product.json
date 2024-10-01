@@ -7,5 +7,7 @@
     "watts" : "Watts",
     "materials" : "Materials",
     "specification" : "Specification",
-    "description" : "Description"
+    "description" : "Description",
+    "relatedproduct" : "Related Products",
+    "viewmore" : "View More"
 }
