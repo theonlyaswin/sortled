@@ -346,6 +346,7 @@ const updateUserProduct = async (type) => {
             <button
               onClick={handleAddToCart}
               className="bg-blue-500 text-white px-6 py-2 rounded-full flex items-center justify-center"
+              style={{flex:'none'}}
             >
               <FiShoppingCart className="mr-2" /> {t('addtocart')}
             </button>
@@ -413,7 +414,7 @@ const updateUserProduct = async (type) => {
       {/* Related Products Section */}
       <div className="mt-12">
         <h2 className="text-2xl font-semibold mb-4" style={{textAlign:(currentLocale == 'ar')?"right":"left"}}>{t('relatedproduct')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 lg:gap-24 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 lg:gap-24 gap-8" style={{display:"flex", flexWrap:"nowrap", overflowX:"auto"}}>
           {relatedProducts.map((relatedProduct, index) => (
             <ProductCard
               key={index}

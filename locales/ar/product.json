@@ -8,5 +8,6 @@
     "materials" : "مواد",
     "specification" : "مواصفة",
     "description" : "وصف",
-    "relatedproduct":"المنتجات ذات الصلة"
+    "relatedproduct":"المنتجات ذات الصلة",
+    "viewmore" : "عرض المزيد"
 }
