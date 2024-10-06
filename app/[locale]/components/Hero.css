@@ -1,0 +1,10 @@
+.ban{
+    margin-top: 18px;
+    justify-content: space-between;
+    width: 100%;
+}
+@media screen and (max-width:800px) {
+    .ban{
+        flex-direction: column !important;
+    }
+}

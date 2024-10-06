@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-
+import '../components/Hero.css';
 const Hero = () => {
   const { t } = useTranslation();
   const [images, setImages] = useState([]);
@@ -90,7 +90,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="container mx-auto lg:px-28 px-4 pb-12 flex flex-col md:flex-row items-center" style={{marginTop:"18px", flexDirection:localeData, justifyContent:"space-between", width:"100%", flexWrap:"wrap"}}>
+    <div className="container mx-auto lg:px-28 px-4 pb-12 flex flex-col md:flex-row items-center ban" style={{flexDirection:localeData}}>
       {/* Left side - Text content */}
       <div className="md:w-1/2 mb-8 md:mb-0 pr-8" style={{width:"fit-content"}}>
         <h1 className={`text-5xl font-medium mb-4 ${t('txt-align')}`}>
