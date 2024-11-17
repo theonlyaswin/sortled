@@ -16,17 +16,17 @@ export default async function RootLayout({ params: { locale }, children }) {
     
   return (
     <html lang="en">
-      <body>
+      <body style={{ direction: locale == "ar" ? "rtl" : "ltr" }}>
         <TranslationsProvider
-      namespaces={i18nNamespaces}
-      locale={locale}
-      resources={resources}>
-        <Navbar />
-        {children}
-        <Footer />
+          namespaces={i18nNamespaces}
+          locale={locale}
+          resources={resources}
+        >
+          <Navbar />
+          {children}
+          <Footer />
         </TranslationsProvider>
       </body>
-
     </html>
   );
 }
