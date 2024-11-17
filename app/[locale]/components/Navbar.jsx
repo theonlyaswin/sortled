@@ -151,7 +151,7 @@ const Navbar = () => {
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
-            <button onClick={toggleLanguage} className="hover:text-gray-600">
+            <button onClick={toggleLanguage} className="hover:text-gray-600" style={{margin:"0 8px"}}>
               <h4 id='locale-text'>{localeData}</h4>
             </button>
             <button onClick={toggleSearch} className="hover:text-gray-600">
@@ -172,7 +172,7 @@ const Navbar = () => {
         </div>
 
         {/* Bottom line - only visible on desktop */}
-        <div className="hidden space-x-6 py-4 bg-blue-500 text-white" style={{display:( window.innerWidth < 1000)?"none":"flex", flexDirection:(localeData == "EN"?"row-reverse":"row"), gap:"30px", justifyContent:"center"}}>
+        <div className="hidden space-x-6 py-4 bg-blue-500 text-white" style={{display:( window.innerWidth < 1000)?"none":"flex", gap:"30px", justifyContent:"center"}}>
           <Link href="/" className="hover:text-black">{t('home')}</Link>
           <Link href="/products" className="hover:text-black">{t('allpro')}</Link>
           <Link href="/orders" className="hover:text-black">{t('orders')}</Link>

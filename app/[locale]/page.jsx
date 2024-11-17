@@ -18,7 +18,9 @@ export default async function Home({ params: { locale } }) {
     >
       {/* Pass the locale to the client-side component for dynamic alignment */}
       <TextAlignment locale={locale}>
-        <div className="min-h-screen flex flex-col">
+        <div
+          className="min-h-screen flex flex-col"
+        >
           <main className="flex-grow mt-[40px] lg:mt-[64px] md:mt-[80px]">
             <Hero />
           </main>
@@ -28,11 +30,22 @@ export default async function Home({ params: { locale } }) {
           </section>
           <OurProducts />
           <div className="flex flex-col md:flex-row justify-evenly items-center p-4 md:p-8 mt-12 md:mt-28 gap-6 overflow-hidden">
-            <img src="./sidebanner1.jpg" alt="banner1" className="object-cover" />
-            <img src="./sidebanner2.jpg" alt="banner2" className="object-cover" />
+            <img
+              src="./sidebanner1.jpg"
+              alt="banner1"
+              className="object-cover"
+            />
+            <img
+              src="./sidebanner2.jpg"
+              alt="banner2"
+              className="object-cover"
+            />
           </div>
           <CompanyHighlights />
-          <div className="blog-layout" style={{margin: "10px 20px", marginBottom: "50px" }}>
+          <div
+            className="blog-layout"
+            style={{ margin: "10px 20px", marginBottom: "50px" }}
+          >
             <Blog />
           </div>
         </div>

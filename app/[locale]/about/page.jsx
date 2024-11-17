@@ -16,7 +16,7 @@ export default async function About({ params: { locale } }) {
         <h3 className="text-2xl md:text-3xl lg:text-4xl">{t("our_history")}</h3>
         <h2 className="heading-bold text-5xl md:text-6xl lg:text-7xl mb-8 mt-2 text-blue-600 animate-fade-in-slide">{t("logo-txt")}</h2>
         <p className="lg:w-2/3 w-full text-center">
-          {t("our_history2")}
+          {t("our_history2")}.
         </p>
       </div>
       <div className="flex justify-center items-center my-12 w-full animate-fade-in-slide">
@@ -43,13 +43,13 @@ export default async function About({ params: { locale } }) {
       <div className="flex justify-center items-center flex-col mb-28 animate-fade-in-slide">
         <h3 className="text-2xl md:text-3xl lg:text-4xl mb-8 heading-bold text-blue-600">{t("our_vision")}</h3>
         <p className="lg:w-2/3 w-full text-center">
-          {t("our_vision2")}
+          {t("our_vision2")}.
         </p>
       </div>
       <div className="flex justify-center items-center flex-col animate-fade-in-slide">
         <h3 className="text-2xl md:text-3xl lg:text-4xl mb-8 heading-bold text-blue-600">{t("our_mission")}</h3>
         <p className="lg:w-2/3 w-full text-center">
-          {t("our_mission2")}
+          {t("our_mission2")}.
         </p>
       </div>
     </div>
